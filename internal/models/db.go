@@ -1,23 +1,35 @@
 package db
 
 import (
-	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"log"
 	"os"
+
+	"github.com/f1k13/school-portal/internal/models/user"
+	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *sqlx.DB
+var DB *gorm.DB
 
 func ConnectDB() error {
 	dbURL := os.Getenv("DATABASE_URL")
-	logger.Log.Info(dbURL, "DB URL")
-	db, err := sqlx.Connect("", dbURL)
+	if dbURL == "" {
+		return fmt.Errorf("DATABASE_URL is not set")
+	}
+
+	var err error
+	DB, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 	if err != nil {
-		logger.Log.WithFields(logrus.Fields{"database_url": dbURL}).Error("Fail to connection database")
+		log.Fatalf("Failed to connect to database: %v", err)
 		return err
 	}
-	DB = db
-	logger.Log.Info("Success connect to database")
+	if err := DB.AutoMigrate(&user.User{}); err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+		return err
+	}
+	log.Println("Successfully connected to database")
 	return nil
 }
+ 
