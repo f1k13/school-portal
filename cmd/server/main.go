@@ -1,11 +1,13 @@
 package main
 
 import (
+	"sync"
+
 	"github.com/f1k13/school-portal/internal/logger"
 	db "github.com/f1k13/school-portal/internal/models"
+	"github.com/f1k13/school-portal/internal/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"sync"
 )
 
 func main() {
@@ -33,6 +35,7 @@ func initConnectDB() {
 }
 func initRouter() {
 	r := gin.Default()
+	routes.StartRouter(r)
 	logger.Log.Info("SERVER START ON PORT", 3000)
 	if err := r.Run(`:3000`); err != nil {
 		logger.Log.Fatal("Error starting server", err)

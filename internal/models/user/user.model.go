@@ -12,8 +12,10 @@ type User struct {
 	PhoneNumber  string    `json:"phoneNumber" gorm:"not null"`
 	Email        string    `json:"email" gorm:"not null"`
 	RefreshToken string    `json:"refreshToken" gorm:"not null"`
-	Avatar string `json:"avatar"`
-	Role string `json:"role" gorm:"not null"`
+	Avatar       string    `json:"avatar"`
+	Role         string    `json:"role" gorm:"not null"`
 }
 
-
+func (User) TableName() string {
+	return "users"
+}
