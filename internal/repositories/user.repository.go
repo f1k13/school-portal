@@ -1,4 +1,4 @@
-package userRepositories
+package repositories
 
 import (
 	"github.com/f1k13/school-portal/internal/handlers/dto"
@@ -7,8 +7,16 @@ import (
 	"github.com/f1k13/school-portal/internal/models/user"
 	"github.com/f1k13/school-portal/internal/utils"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
+type UserRepository struct {
+	DB *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{DB: db}
+}
 func CreateUser(userDto dto.UserDto) (user.User, error) {
 
 	u := user.User{

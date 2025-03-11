@@ -1,12 +1,13 @@
 package main
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/f1k13/school-portal/internal/logger"
 	db "github.com/f1k13/school-portal/internal/models"
 	"github.com/f1k13/school-portal/internal/routes"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -34,10 +35,8 @@ func initConnectDB() {
 	}
 }
 func initRouter() {
-	r := gin.Default()
+	r := chi.NewRouter()
 	routes.StartRouter(r)
 	logger.Log.Info("SERVER START ON PORT", 3000)
-	if err := r.Run(`:3000`); err != nil {
-		logger.Log.Fatal("Error starting server", err)
-	}
+	http.ListenAndServe(":3000", r)
 }

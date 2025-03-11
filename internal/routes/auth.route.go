@@ -1,10 +1,10 @@
 package routes
 
 import (
-	userHandlers "github.com/f1k13/school-portal/internal/handlers"
-	"github.com/gin-gonic/gin"
+	"github.com/f1k13/school-portal/internal/handlers"
+	"github.com/go-chi/chi/v5"
 )
 
-func AuthRouter(r *gin.Engine) {
-	r.POST("/auth/sign-up", userHandlers.SignUp)
+func AuthRouter(r *chi.Mux, authHandler *handlers.AuthHandler) {
+	r.Post("/auth/sign-up", authHandler.SignUp)
 }
