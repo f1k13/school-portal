@@ -32,4 +32,3 @@ func ConnectDB() error {
 	log.Println("Successfully connected to database")
 	return nil
 }
- 

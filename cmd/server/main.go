@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"sync"
 
 	"github.com/f1k13/school-portal/internal/logger"
 	db "github.com/f1k13/school-portal/internal/models"
@@ -16,18 +15,8 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		logger.Log.Fatal("Error loading .env files")
 	}
-
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		initRouter()
-	}()
-	go func() {
-		defer wg.Done()
-		initConnectDB()
-	}()
-	wg.Wait()
+	initConnectDB()
+	initRouter()
 }
 func initConnectDB() {
 	if err := db.ConnectDB(); err != nil {

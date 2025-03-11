@@ -31,7 +31,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	u, err := h.AuthService.SignUp(userDto)
 	if err != nil {
-		http.Error(w, "error sign up method", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		logger.Log.Error("error sign up method")
 		return
 	}
