@@ -1,47 +1,54 @@
 package repositories
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/f1k13/school-portal/internal/handlers/dto"
-	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/user"
+	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
+	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
 	"github.com/f1k13/school-portal/internal/utils"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	DB *gorm.DB
+	DB *sql.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
+func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{DB: db}
 }
-func (r *UserRepository) CreateUser(userDto dto.UserDto) (user.User, error) {
-	u := user.User{
+func (r *UserRepository) CreateUser(userDto dto.UserDto) (*model.Users, error) {
+	u := model.Users{
 		ID:          uuid.New(),
 		FirstName:   userDto.FirstName,
 		MiddleName:  userDto.MiddleName,
-		SurName:     userDto.SurName,
 		PhoneNumber: utils.PtrToStr(userDto.PhoneNumber),
 		Email:       userDto.Email,
 		Role:        userDto.Role,
 	}
-	if err := r.DB.Create(&u).Error; err != nil {
-		logger.Log.Error("Error creating user", err)
-		return user.User{}, err
+	stmt := table.Users.INSERT(table.Users.AllColumns).MODEL(u).RETURNING(table.Users.AllColumns)
+	var dest []model.Users
+	err := stmt.Query(r.DB, &dest)
+
+	if err != nil {
+		return nil, err
 	}
-	return u, nil
+	if len(dest) == 0 {
+		return nil, errors.New("Ошибка в репо")
+	}
+	return &dest[0], nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (user.User, error) {
-	u := user.User{}
+func (r *UserRepository) GetUserByEmail(email string) (*model.Users, error) {
+	u := model.Users{}
 	if email == "" {
-		return user.User{}, nil
+		return &model.Users{}, nil
 	}
-	err := r.DB.Where("email = ?", email).First(&u).Error
-	if err != nil {
-		logger.Log.Error("Error getting user by email", err)
-		return user.User{}, nil
-	}
-	return u, nil
+	// err := r.DB.Where("email = ?", email).First(&u).Error
+	// if err != nil {
+	// 	logger.Log.Error("Error getting user by email", err)
+	// 	return user.User{}, nil
+	// }
+	return &u, nil
 }

@@ -6,8 +6,8 @@ import (
 
 	"github.com/f1k13/school-portal/internal/handlers/dto"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/user"
 	"github.com/f1k13/school-portal/internal/services"
+	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,8 +15,8 @@ type AuthHandler struct {
 	AuthService *services.AuthService
 }
 type SignUpRes struct {
-	Message string    `json:"message"`
-	U       user.User `json:"user"`
+	Message string      `json:"message"`
+	U       model.Users `json:"user"`
 }
 
 func NewAuthHandler(authService *services.AuthService) *AuthHandler {
@@ -37,7 +37,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	res := SignUpRes{
 		Message: "Успешная регистрация",
-		U:       u,
+		U:       *u,
 	}
 	ResponseJson(w, http.StatusCreated, res)
 }

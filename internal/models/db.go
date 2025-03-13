@@ -1,17 +1,14 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 	"log"
 	"os"
-
-	"github.com/f1k13/school-portal/internal/models/user"
-	_ "github.com/lib/pq"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var DB *sql.DB
 
 func ConnectDB() error {
 	dbURL := os.Getenv("DATABASE_URL")
@@ -20,15 +17,17 @@ func ConnectDB() error {
 	}
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+	DB, err = sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Не удалось подключиться к базе данных: %v", err)
 		return err
 	}
-	if err := DB.AutoMigrate(&user.User{}); err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+
+	if err := DB.Ping(); err != nil {
+		log.Fatalf("Не удалось пинговать базу данных: %v", err)
 		return err
 	}
-	log.Println("Successfully connected to database")
+
+	log.Println("Успешно подключено к базе данных")
 	return nil
 }
