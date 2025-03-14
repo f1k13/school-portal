@@ -1,18 +1,18 @@
 package services
 
-// import (
-// 	"github.com/f1k13/school-portal/internal/models/user"
-// 	"github.com/f1k13/school-portal/internal/repositories"
-// )
+import (
+	"github.com/f1k13/school-portal/internal/repositories"
+	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
+)
 
-// type UserService struct {
-// 	UserRepo *repositories.UserRepository
-// }
+type UserService struct {
+	UserRepo *repositories.UserRepository
+}
 
-// func NewUserService(userRepo *repositories.UserRepository) *UserService {
-// 	return &UserService{UserRepo: userRepo}
-// }
+func NewUserService(userRepo *repositories.UserRepository) *UserService {
+	return &UserService{UserRepo: userRepo}
+}
 
-// func (s *UserService) GetUserByEmail(email string) (user.User, error) {
-// 	u, err := user
-// }
+func (s *UserService) GetUserByEmail(email string) (*model.Users, error) {
+	return s.UserRepo.GetUserByEmail(email)
+}

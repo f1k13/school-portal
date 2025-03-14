@@ -1,16 +1,18 @@
 package routes
 
 import (
+	"database/sql"
+
 	"github.com/f1k13/school-portal/internal/handlers"
-	db "github.com/f1k13/school-portal/internal/models"
 	"github.com/f1k13/school-portal/internal/repositories"
 	"github.com/f1k13/school-portal/internal/services"
 	"github.com/go-chi/chi/v5"
 )
 
-func StartRouter(r *chi.Mux) {
-	userRepo := repositories.NewUserRepository(db.DB)
+func StartRouter(r *chi.Mux, db *sql.DB) {
+	userRepo := repositories.NewUserRepository(db)
 	authService := services.NewAuthService(userRepo)
-	authHandler := handlers.NewAuthHandler(authService)
+	userService := services.NewUserService(userRepo)
+	authHandler := handlers.NewAuthHandler(authService, userService)
 	AuthRouter(r, authHandler)
 }

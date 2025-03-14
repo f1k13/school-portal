@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/f1k13/school-portal/internal/handlers/dto"
+	"github.com/f1k13/school-portal/internal/dto"
+	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
 	"github.com/f1k13/school-portal/internal/utils"
+	"github.com/go-jet/jet/v2/postgres"
 	"github.com/google/uuid"
 )
 
@@ -26,29 +28,50 @@ func (r *UserRepository) CreateUser(userDto dto.UserDto) (*model.Users, error) {
 		PhoneNumber: utils.PtrToStr(userDto.PhoneNumber),
 		Email:       userDto.Email,
 		Role:        userDto.Role,
+		LastName:    userDto.SurName,
 	}
-	stmt := table.Users.INSERT(table.Users.AllColumns).MODEL(u).RETURNING(table.Users.AllColumns)
+	existUser, err := r.GetUserByEmail(userDto.Email)
+	if err != nil && err.Error() != "user not found" {
+		return nil, err
+	}
+	if existUser != nil {
+		return nil, errors.New("user already exists")
+	}
+	stmt := table.Users.INSERT(table.Users.ID,
+		table.Users.FirstName,
+		table.Users.MiddleName,
+		table.Users.PhoneNumber,
+		table.Users.Email,
+		table.Users.Role, table.Users.LastName, table.Users.RefreshToken).MODEL(u).RETURNING(table.Users.AllColumns)
 	var dest []model.Users
-	err := stmt.Query(r.DB, &dest)
+	err = stmt.Query(r.DB, &dest)
 
 	if err != nil {
 		return nil, err
 	}
 	if len(dest) == 0 {
-		return nil, errors.New("Ошибка в репо")
+		return nil, errors.New("error in create user")
 	}
 	return &dest[0], nil
 }
 
 func (r *UserRepository) GetUserByEmail(email string) (*model.Users, error) {
-	u := model.Users{}
 	if email == "" {
-		return &model.Users{}, nil
+		return nil, errors.New("email is empty")
 	}
-	// err := r.DB.Where("email = ?", email).First(&u).Error
-	// if err != nil {
-	// 	logger.Log.Error("Error getting user by email", err)
-	// 	return user.User{}, nil
-	// }
-	return &u, nil
+	stmt := table.Users.SELECT(table.Users.AllColumns).FROM(table.Users).WHERE(
+		table.Users.Email.EQ(postgres.String(email)),
+	)
+	var dest model.Users
+	err := stmt.Query(r.DB, &dest)
+
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	logger.Log.Info("dest", dest)
+	return &dest, nil
 }
