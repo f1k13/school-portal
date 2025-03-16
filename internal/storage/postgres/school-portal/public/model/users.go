@@ -22,4 +22,5 @@ type Users struct {
 	Role         string
 	PhoneNumber  string
 	CreatedAt    *time.Time
+	AuthCode     *string
 }

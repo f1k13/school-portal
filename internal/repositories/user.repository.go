@@ -75,3 +75,54 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.Users, error) {
 	logger.Log.Info("dest", dest)
 	return &dest, nil
 }
+func (r *UserRepository) SetAuthCode(user *model.Users, authCode string) error {
+	updatedUser := model.Users{
+		AuthCode: &authCode,
+	}
+
+	stmt := table.Users.
+		UPDATE(table.Users.AuthCode).
+		MODEL(updatedUser).
+		WHERE(table.Users.ID.EQ(postgres.UUID(user.ID)))
+
+	_, err := stmt.Exec(r.DB)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (r *UserRepository) SetRefreshToken(user *model.Users, refreshToken string) error {
+	updatedUser := model.Users{
+		RefreshToken: refreshToken,
+	}
+
+	stmt := table.Users.
+		UPDATE(table.Users.RefreshToken).
+		MODEL(updatedUser).
+		WHERE(table.Users.ID.EQ(postgres.UUID(user.ID)))
+
+	_, err := stmt.Exec(r.DB)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) GetUserByAuthCode(code string) (*model.Users, error) {
+	if code == "" {
+		return nil, errors.New("code is empty")
+	}
+	stmt := table.Users.SELECT(table.Users.AllColumns).FROM(table.Users).WHERE(
+		table.Users.AuthCode.EQ(postgres.String(code)),
+	)
+	var dest model.Users
+	err := stmt.Query(r.DB, &dest)
+
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &dest, nil
+}

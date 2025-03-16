@@ -8,9 +8,9 @@ CREATE TABLE users (
 		refresh_token TEXT NOT NULL,
 		role TEXT NOT NULL,
 		phone_number TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT now()
+    created_at TIMESTAMP DEFAULT now(),
+    auth_code TEXT
 );
 
 -- +goose Down
 DROP TABLE users;
-jet -dsn=postgres://postgres:1234@localhost:5432/school-portal?sslmode=disable -schema=dvds -path=./.internal/storage 

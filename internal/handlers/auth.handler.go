@@ -30,20 +30,23 @@ type SignUpRes struct {
 	User  model.Users `json:"user"`
 	Token string      `json:"token"`
 }
+type SignUpReq struct {
+	Code string `json:"code"`
+}
 
 func NewAuthHandler(authService *services.AuthService, userService *services.UserService) *AuthHandler {
 	return &AuthHandler{AuthService: authService, UserService: userService}
 }
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var userDto dto.UserDto
-	if err := json.NewDecoder(r.Body).Decode(&userDto); err != nil {
+	var req SignUpReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		res := Response{Message: err.Error()}
 		ResponseJson(w, http.StatusBadRequest, res)
 		logger.Log.Error("error decoding json", err)
 		return
 	}
 
-	u, err := h.AuthService.SignUp(userDto)
+	u, err := h.AuthService.SignUp(req.Code)
 	if err != nil {
 		res := Response{Message: err.Error()}
 		ResponseJson(w, http.StatusBadRequest, res)
@@ -57,5 +60,22 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	ResponseJson(w, http.StatusCreated, res)
 }
-
+func (h *AuthHandler) InitAuthSignUp(w http.ResponseWriter, r *http.Request) {
+	var userDto dto.UserDto
+	if err := json.NewDecoder(r.Body).Decode(&userDto); err != nil {
+		res := Response{Message: err.Error()}
+		ResponseJson(w, http.StatusBadRequest, res)
+		logger.Log.Error("error decoding json", err)
+		return
+	}
+	err := h.AuthService.InitSignUp(userDto)
+	if err != nil {
+		res := Response{Message: err.Error()}
+		ResponseJson(w, http.StatusBadRequest, res)
+		logger.Log.Error("error sign up method")
+		return
+	}
+	res := Response{Message: "Код отправлен на почту"}
+	ResponseJson(w, http.StatusCreated, res)
+}
 func SignIn(c *gin.Context) {}
