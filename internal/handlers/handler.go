@@ -10,16 +10,17 @@ import (
 type Response struct {
 	Message string `json:"message"`
 }
+type Handlers struct{}
 
-func ResponseJson(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Set("content-type", "application/json")
+func (h *Handlers) ResponseJson(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, "error in method responseJson", http.StatusBadRequest)
+		http.Error(w, "error in method ResponseJson", http.StatusBadRequest)
 	}
 }
 
-func GetUserIDCtx(ctx context.Context) string {
-	userID := ctx.Value(middleware.UserIDKey).(string)
+func (h *Handlers) GetUserIDCtx(ctx context.Context) string {
+	userID, _ := ctx.Value(middleware.UserIDKey).(string)
 	return userID
 }

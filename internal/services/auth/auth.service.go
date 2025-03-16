@@ -1,4 +1,4 @@
-package services
+package authService
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/f1k13/school-portal/internal/dto"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/repositories"
+	repositories "github.com/f1k13/school-portal/internal/repositories/user"
 	"github.com/golang-jwt/jwt/v4"
 )
 
