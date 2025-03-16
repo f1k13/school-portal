@@ -15,7 +15,7 @@ import (
 
 func App() {
 	ConnectDB()
-	initRouter()
+	StartApp()
 }
 
 var DB *sql.DB
@@ -42,7 +42,8 @@ func ConnectDB() error {
 	return nil
 }
 
-func initRouter() {
+func StartApp() {
+
 	r := chi.NewRouter()
 	routes.StartRouter(r, DB)
 	logger.Log.Info("SERVER START ON PORT", 3000)

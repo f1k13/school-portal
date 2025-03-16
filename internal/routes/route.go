@@ -5,6 +5,7 @@ import (
 
 	authHandler "github.com/f1k13/school-portal/internal/handlers/auth"
 	userHandler "github.com/f1k13/school-portal/internal/handlers/user"
+	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/middleware"
 	repositories "github.com/f1k13/school-portal/internal/repositories/user"
 	authRoute "github.com/f1k13/school-portal/internal/routes/auth"
@@ -16,11 +17,17 @@ import (
 
 func StartRouter(r *chi.Mux, db *sql.DB) {
 	userRepo := repositories.NewUserRepository(db)
-	authService := authService.NewAuthService(userRepo)
+
+	emailService := email.NewEmailInfrastructure()
+
+	authService := authService.NewAuthService(userRepo, emailService)
 	userService := userService.NewUserService(userRepo)
+
 	authHandler := authHandler.NewAuthHandler(authService, userService)
 	userHandler := userHandler.NewUserHandler(userService)
+
 	authMiddleware := middleware.NewAuthMiddleware()
+
 	authRoute.AuthRouter(r, authHandler)
 	userRoute.UserRoute(r, userHandler, authMiddleware)
 }

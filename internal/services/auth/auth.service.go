@@ -8,17 +8,19 @@ import (
 	"time"
 
 	"github.com/f1k13/school-portal/internal/dto"
+	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/logger"
 	repositories "github.com/f1k13/school-portal/internal/repositories/user"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type AuthService struct {
-	UserRepo *repositories.UserRepository
+	UserRepo     *repositories.UserRepository
+	EmailService email.EmailService
 }
 
-func NewAuthService(userRepo *repositories.UserRepository) *AuthService {
-	return &AuthService{UserRepo: userRepo}
+func NewAuthService(userRepo *repositories.UserRepository, emailService *email.EmailService) *AuthService {
+	return &AuthService{UserRepo: userRepo, EmailService: *emailService}
 }
 func (s *AuthService) SignUp(code string) (*dto.UserToken, error) {
 	u, err := s.UserRepo.GetUserByAuthCode(code)
@@ -59,6 +61,10 @@ func (s *AuthService) InitSignUp(user dto.UserDto) error {
 	}
 
 	u, err := s.UserRepo.CreateUser(user)
+	if err != nil {
+		logger.Log.Error("Error creating user", err)
+		return err
+	}
 	refreshT, err := generateJwt(u.ID.String(), time.Now().Add(time.Hour*72).Unix())
 	if err != nil {
 		return err
@@ -77,7 +83,7 @@ func (s *AuthService) InitSignUp(user dto.UserDto) error {
 		return err
 	}
 
-	// err = sendEmail(user.Email, code)
+	err = s.EmailService.SendEmail(user.Email, "Verification code", fmt.Sprintf("Your verification code is %s", code))
 	logger.Log.Info("code", code)
 	if err != nil {
 		logger.Log.Error("Error sending email", err)
