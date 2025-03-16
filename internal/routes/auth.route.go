@@ -8,4 +8,6 @@ import (
 func AuthRouter(r *chi.Mux, authHandler *handlers.AuthHandler) {
 	r.Post("/auth/sign-up", authHandler.SignUp)
 	r.Post("/auth/init-sign-up", authHandler.InitAuthSignUp)
+	r.Post("/auth/init-sign-in", authHandler.InitAuthSignIn)
+	r.Post("/auth/sign-in", authHandler.SignIn)
 }

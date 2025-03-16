@@ -86,6 +86,41 @@ func (s *AuthService) InitSignUp(user dto.UserDto) error {
 
 	return nil
 }
+func (s *AuthService) InitSignIn(email string) error {
+	u, err := s.UserRepo.GetUserByEmail(email)
+
+	if err != nil {
+		logger.Log.Error("Error getting user by email", err)
+		return err
+	}
+	if u == nil {
+		return errors.New("user not found")
+	}
+	code := fmt.Sprintf("%06d", rand.Intn(1000000))
+	err = s.UserRepo.SetAuthCode(u, code)
+	if err != nil {
+		logger.Log.Error("Error saving auth code", err)
+		return err
+	}
+	return nil
+}
+
+func (s *AuthService) SignIn(code string) (*dto.UserToken, error) {
+	u, err := s.UserRepo.GetUserByAuthCode(code)
+	if err != nil {
+		logger.Log.Error("Error getting user by auth code", err)
+		return nil, err
+	}
+	t, err := generateJwt(u.ID.String(), time.Now().Add(time.Hour*72).Unix())
+	if err != nil {
+		logger.Log.Error("Error generating token", err)
+		return nil, err
+	}
+	return &dto.UserToken{
+		User:  *u,
+		Token: t,
+	}, nil
+}
 func sendEmail(email string, code string) {
 
 }

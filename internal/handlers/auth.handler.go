@@ -8,37 +8,30 @@ import (
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/services"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type AuthHandler struct {
 	AuthService *services.AuthService
 	UserService *services.UserService
 }
-type Users struct {
-	ID          uuid.UUID `json:"id"`
-	FirstName   string    `json:"first_name"`
-	MiddleName  string    `json:"middle_name"`
-	PhoneNumber *string   `json:"phone_number"`
-	Email       string    `json:"email"`
-	Role        string    `json:"role"`
-	CreatedAt   string    `json:"created_at"`
-}
-type SignUpRes struct {
+
+type AuthRes struct {
 	Response
 	User  model.Users `json:"user"`
 	Token string      `json:"token"`
 }
-type SignUpReq struct {
+type AuthCodeReq struct {
 	Code string `json:"code"`
+}
+type SignInReq struct {
+	Email string `json:"email"`
 }
 
 func NewAuthHandler(authService *services.AuthService, userService *services.UserService) *AuthHandler {
 	return &AuthHandler{AuthService: authService, UserService: userService}
 }
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var req SignUpReq
+	var req AuthCodeReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		res := Response{Message: err.Error()}
 		ResponseJson(w, http.StatusBadRequest, res)
@@ -53,7 +46,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		logger.Log.Error("error sign up method")
 		return
 	}
-	res := SignUpRes{
+	res := AuthRes{
 		Response: Response{Message: "Успешная регистрация"},
 		User:     u.User,
 		Token:    u.Token,
@@ -78,4 +71,43 @@ func (h *AuthHandler) InitAuthSignUp(w http.ResponseWriter, r *http.Request) {
 	res := Response{Message: "Код отправлен на почту"}
 	ResponseJson(w, http.StatusCreated, res)
 }
-func SignIn(c *gin.Context) {}
+func (h *AuthHandler) InitAuthSignIn(w http.ResponseWriter, r *http.Request) {
+	var req SignInReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		res := Response{Message: err.Error()}
+		ResponseJson(w, http.StatusBadRequest, res)
+		logger.Log.Error("error decoding json", err)
+		return
+	}
+	err := h.AuthService.InitSignIn(req.Email)
+	if err != nil {
+		res := Response{Message: err.Error()}
+		ResponseJson(w, http.StatusBadRequest, res)
+		logger.Log.Error("error sign up method")
+		return
+	}
+	res := Response{Message: "Код отправлен на почту"}
+	ResponseJson(w, http.StatusCreated, res)
+}
+func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
+	var req AuthCodeReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		res := Response{Message: err.Error()}
+		ResponseJson(w, http.StatusBadRequest, res)
+		logger.Log.Error("error decoding json", err)
+		return
+	}
+	u, err := h.AuthService.SignIn(req.Code)
+	if err != nil {
+		logger.Log.Fatal("error in sign in method")
+		res := Response{Message: err.Error()}
+		ResponseJson(w, http.StatusBadRequest, res)
+		return
+	}
+	res := dto.UserToken{
+		User:  u.User,
+		Token: u.Token,
+	}
+	ResponseJson(w, http.StatusOK, res)
+
+}

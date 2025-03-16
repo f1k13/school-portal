@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/f1k13/school-portal/internal/middleware"
 	"net/http"
 )
 
@@ -15,4 +17,9 @@ func ResponseJson(w http.ResponseWriter, status int, data interface{}) {
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		http.Error(w, "error in method responseJson", http.StatusBadRequest)
 	}
+}
+
+func GetUserIDCtx(ctx context.Context) string {
+	userID := ctx.Value(middleware.UserIDKey).(string)
+	return userID
 }

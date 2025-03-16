@@ -126,3 +126,24 @@ func (r *UserRepository) GetUserByAuthCode(code string) (*model.Users, error) {
 	}
 	return &dest, nil
 }
+
+func (r *UserRepository) GetUserByID(id string) (*model.Users, error) {
+	if id == "" {
+		return nil, errors.New("id is empty")
+	}
+	uuidID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid UUID format")
+	}
+	var stmt = table.Users.SELECT(table.Users.AllColumns).FROM(table.Users).WHERE(table.Users.ID.EQ(postgres.UUID(uuidID)))
+	var dest model.Users
+	err = stmt.Query(r.DB, &dest)
+
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &dest, err
+}
