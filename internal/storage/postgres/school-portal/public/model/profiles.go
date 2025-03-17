@@ -12,12 +12,13 @@ import (
 	"time"
 )
 
-type Users struct {
-	ID           uuid.UUID `sql:"primary_key"`
-	Email        string
-	Role         string
-	CreatedAt    *time.Time
-	AuthCode     string
-	Verified     bool
-	RefreshToken string
+type Profiles struct {
+	ID          uuid.UUID `sql:"primary_key"`
+	UserID      uuid.UUID
+	FirstName   *string
+	LastName    *string
+	PhoneNumber *string
+	AvatarURL   *string
+	Dob         *string
+	CreatedAt   *time.Time
 }

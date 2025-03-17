@@ -18,16 +18,12 @@ type usersTable struct {
 
 	// Columns
 	ID           postgres.ColumnString
-	FirstName    postgres.ColumnString
-	LastName     postgres.ColumnString
 	Email        postgres.ColumnString
-	MiddleName   postgres.ColumnString
-	RefreshToken postgres.ColumnString
 	Role         postgres.ColumnString
-	PhoneNumber  postgres.ColumnString
 	CreatedAt    postgres.ColumnTimestamp
 	AuthCode     postgres.ColumnString
-	IsAccess     postgres.ColumnBool
+	Verified     postgres.ColumnBool
+	RefreshToken postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -69,18 +65,14 @@ func newUsersTable(schemaName, tableName, alias string) *UsersTable {
 func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 	var (
 		IDColumn           = postgres.StringColumn("id")
-		FirstNameColumn    = postgres.StringColumn("first_name")
-		LastNameColumn     = postgres.StringColumn("last_name")
 		EmailColumn        = postgres.StringColumn("email")
-		MiddleNameColumn   = postgres.StringColumn("middle_name")
-		RefreshTokenColumn = postgres.StringColumn("refresh_token")
 		RoleColumn         = postgres.StringColumn("role")
-		PhoneNumberColumn  = postgres.StringColumn("phone_number")
 		CreatedAtColumn    = postgres.TimestampColumn("created_at")
 		AuthCodeColumn     = postgres.StringColumn("auth_code")
-		IsAccessColumn     = postgres.BoolColumn("is_access")
-		allColumns         = postgres.ColumnList{IDColumn, FirstNameColumn, LastNameColumn, EmailColumn, MiddleNameColumn, RefreshTokenColumn, RoleColumn, PhoneNumberColumn, CreatedAtColumn, AuthCodeColumn, IsAccessColumn}
-		mutableColumns     = postgres.ColumnList{FirstNameColumn, LastNameColumn, EmailColumn, MiddleNameColumn, RefreshTokenColumn, RoleColumn, PhoneNumberColumn, CreatedAtColumn, AuthCodeColumn, IsAccessColumn}
+		VerifiedColumn     = postgres.BoolColumn("verified")
+		RefreshTokenColumn = postgres.StringColumn("refresh_token")
+		allColumns         = postgres.ColumnList{IDColumn, EmailColumn, RoleColumn, CreatedAtColumn, AuthCodeColumn, VerifiedColumn, RefreshTokenColumn}
+		mutableColumns     = postgres.ColumnList{EmailColumn, RoleColumn, CreatedAtColumn, AuthCodeColumn, VerifiedColumn, RefreshTokenColumn}
 	)
 
 	return usersTable{
@@ -88,16 +80,12 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 
 		//Columns
 		ID:           IDColumn,
-		FirstName:    FirstNameColumn,
-		LastName:     LastNameColumn,
 		Email:        EmailColumn,
-		MiddleName:   MiddleNameColumn,
-		RefreshToken: RefreshTokenColumn,
 		Role:         RoleColumn,
-		PhoneNumber:  PhoneNumberColumn,
 		CreatedAt:    CreatedAtColumn,
 		AuthCode:     AuthCodeColumn,
-		IsAccess:     IsAccessColumn,
+		Verified:     VerifiedColumn,
+		RefreshToken: RefreshTokenColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

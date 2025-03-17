@@ -9,4 +9,5 @@ import (
 func UserRoute(r *chi.Mux, userController *userController.UserController, authMiddleware *middleware.AuthMiddleWare) {
 
 	r.With(authMiddleware.Auth).Get("/user/get-self", userController.GetSelf)
+	r.With(authMiddleware.Auth).Post("/user/profile/post", userController.ProfilePost)
 }

@@ -10,7 +10,6 @@ import (
 
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
-	"github.com/f1k13/school-portal/internal/utils"
 	"github.com/go-jet/jet/v2/postgres"
 	"github.com/google/uuid"
 )
@@ -24,27 +23,20 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 func (r *UserRepository) CreateUser(userDto dto.UserDto) (*user.User, error) {
 	u := model.Users{
-		ID:          uuid.New(),
-		FirstName:   userDto.FirstName,
-		MiddleName:  userDto.MiddleName,
-		PhoneNumber: utils.PtrToStr(userDto.PhoneNumber),
-		Email:       userDto.Email,
-		Role:        userDto.Role,
-		LastName:    userDto.SurName,
+		ID:    uuid.New(),
+		Email: userDto.Email,
+		Role:  userDto.Role,
 	}
 	existUser, err := r.GetUserByEmail(userDto.Email)
 	if err != nil && err.Error() != "user not found" {
 		return nil, err
 	}
-	if existUser != nil && existUser.IsAccess {
+	if existUser != nil && existUser.Verified {
 		return nil, errors.New("user already exists")
 	}
 	stmt := table.Users.INSERT(table.Users.ID,
-		table.Users.FirstName,
-		table.Users.MiddleName,
-		table.Users.PhoneNumber,
 		table.Users.Email,
-		table.Users.Role, table.Users.LastName, table.Users.RefreshToken).MODEL(u).RETURNING(table.Users.AllColumns)
+		table.Users.Role, table.Users.RefreshToken).MODEL(u).RETURNING(table.Users.AllColumns)
 	var dest []model.Users
 	err = stmt.Query(r.DB, &dest)
 
@@ -79,7 +71,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*user.User, error) {
 }
 func (r *UserRepository) SetAuthCode(user *user.User, authCode string) error {
 	updatedUser := model.Users{
-		AuthCode: &authCode,
+		AuthCode: authCode,
 	}
 
 	stmt := table.Users.
@@ -152,11 +144,11 @@ func (r *UserRepository) GetUserByID(id string) (*user.User, error) {
 
 func (r *UserRepository) SetIsAccess(user *user.User) error {
 	updatedUser := model.Users{
-		IsAccess: true,
+		Verified: true,
 	}
 
 	stmt := table.Users.
-		UPDATE(table.Users.IsAccess).
+		UPDATE(table.Users.Verified).
 		MODEL(updatedUser).
 		WHERE(table.Users.ID.EQ(postgres.UUID(user.ID)))
 
@@ -165,4 +157,29 @@ func (r *UserRepository) SetIsAccess(user *user.User) error {
 		return err
 	}
 	return nil
+}
+
+func (r *UserRepository) CreateProfile(dto *dto.UserProfileDto, userID uuid.UUID) (*user.Profile, error) {
+	profile := user.Profile{
+		ID:          uuid.New(),
+		FirstName:   dto.FirstName,
+		LastName:    dto.LastName,
+		PhoneNumber: dto.PhoneNumber,
+		AvatarURL:   dto.AvatarUrl,
+		Dob:         dto.Dob,
+		UserID:      userID,
+	}
+	stmt := table.Profiles.INSERT(table.Profiles.AllColumns).MODEL(profile).RETURNING(table.Profiles.AllColumns)
+	var dest []user.Profile
+
+	err := stmt.Query(r.DB, &dest)
+	if err != nil {
+		logger.Log.Error(err)
+		return nil, err
+	}
+	if len(dest) == 0 {
+		return nil, errors.New("error in create profile")
+	}
+
+	return &dest[0], nil
 }
