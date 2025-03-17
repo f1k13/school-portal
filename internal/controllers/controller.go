@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"context"
@@ -10,9 +10,9 @@ import (
 type Response struct {
 	Message string `json:"message"`
 }
-type Handlers struct{}
+type Controller struct{}
 
-func (h *Handlers) ResponseJson(w http.ResponseWriter, status int, data interface{}) {
+func (h *Controller) ResponseJson(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
@@ -20,7 +20,7 @@ func (h *Handlers) ResponseJson(w http.ResponseWriter, status int, data interfac
 	}
 }
 
-func (h *Handlers) GetUserIDCtx(ctx context.Context) string {
+func (h *Controller) GetUserIDCtx(ctx context.Context) string {
 	userID, _ := ctx.Value(middleware.UserIDKey).(string)
 	return userID
 }

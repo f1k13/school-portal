@@ -6,6 +6,8 @@ import (
 
 	"github.com/f1k13/school-portal/internal/dto"
 	"github.com/f1k13/school-portal/internal/logger"
+	"github.com/f1k13/school-portal/internal/models/user"
+
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
 	"github.com/f1k13/school-portal/internal/utils"
@@ -20,7 +22,7 @@ type UserRepository struct {
 func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{DB: db}
 }
-func (r *UserRepository) CreateUser(userDto dto.UserDto) (*model.Users, error) {
+func (r *UserRepository) CreateUser(userDto dto.UserDto) (*user.User, error) {
 	u := model.Users{
 		ID:          uuid.New(),
 		FirstName:   userDto.FirstName,
@@ -34,7 +36,7 @@ func (r *UserRepository) CreateUser(userDto dto.UserDto) (*model.Users, error) {
 	if err != nil && err.Error() != "user not found" {
 		return nil, err
 	}
-	if existUser != nil {
+	if existUser != nil && existUser.IsAccess {
 		return nil, errors.New("user already exists")
 	}
 	stmt := table.Users.INSERT(table.Users.ID,
@@ -55,7 +57,7 @@ func (r *UserRepository) CreateUser(userDto dto.UserDto) (*model.Users, error) {
 	return &dest[0], nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*model.Users, error) {
+func (r *UserRepository) GetUserByEmail(email string) (*user.User, error) {
 	if email == "" {
 		return nil, errors.New("email is empty")
 	}
@@ -75,7 +77,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.Users, error) {
 	logger.Log.Info("dest", dest)
 	return &dest, nil
 }
-func (r *UserRepository) SetAuthCode(user *model.Users, authCode string) error {
+func (r *UserRepository) SetAuthCode(user *user.User, authCode string) error {
 	updatedUser := model.Users{
 		AuthCode: &authCode,
 	}
@@ -91,7 +93,7 @@ func (r *UserRepository) SetAuthCode(user *model.Users, authCode string) error {
 	}
 	return nil
 }
-func (r *UserRepository) SetRefreshToken(user *model.Users, refreshToken string) error {
+func (r *UserRepository) SetRefreshToken(user *user.User, refreshToken string) error {
 	updatedUser := model.Users{
 		RefreshToken: refreshToken,
 	}
@@ -108,7 +110,7 @@ func (r *UserRepository) SetRefreshToken(user *model.Users, refreshToken string)
 	return nil
 }
 
-func (r *UserRepository) GetUserByAuthCode(code string) (*model.Users, error) {
+func (r *UserRepository) GetUserByAuthCode(code string) (*user.User, error) {
 	if code == "" {
 		return nil, errors.New("code is empty")
 	}
@@ -127,7 +129,7 @@ func (r *UserRepository) GetUserByAuthCode(code string) (*model.Users, error) {
 	return &dest, nil
 }
 
-func (r *UserRepository) GetUserByID(id string) (*model.Users, error) {
+func (r *UserRepository) GetUserByID(id string) (*user.User, error) {
 	if id == "" {
 		return nil, errors.New("id is empty")
 	}
@@ -146,4 +148,21 @@ func (r *UserRepository) GetUserByID(id string) (*model.Users, error) {
 		return nil, err
 	}
 	return &dest, err
+}
+
+func (r *UserRepository) SetIsAccess(user *user.User) error {
+	updatedUser := model.Users{
+		IsAccess: true,
+	}
+
+	stmt := table.Users.
+		UPDATE(table.Users.IsAccess).
+		MODEL(updatedUser).
+		WHERE(table.Users.ID.EQ(postgres.UUID(user.ID)))
+
+	_, err := stmt.Exec(r.DB)
+	if err != nil {
+		return err
+	}
+	return nil
 }

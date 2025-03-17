@@ -10,6 +10,7 @@ import (
 	"github.com/f1k13/school-portal/internal/dto"
 	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/logger"
+	"github.com/f1k13/school-portal/internal/models/user"
 	repositories "github.com/f1k13/school-portal/internal/repositories/user"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -22,7 +23,7 @@ type AuthService struct {
 func NewAuthService(userRepo *repositories.UserRepository, emailService *email.EmailService) *AuthService {
 	return &AuthService{UserRepo: userRepo, EmailService: *emailService}
 }
-func (s *AuthService) SignUp(code string) (*dto.UserToken, error) {
+func (s *AuthService) SignUp(code string) (*user.UserWithToken, error) {
 	u, err := s.UserRepo.GetUserByAuthCode(code)
 	if err != nil {
 		logger.Log.Error("Error getting user by auth code", err)
@@ -33,7 +34,14 @@ func (s *AuthService) SignUp(code string) (*dto.UserToken, error) {
 		logger.Log.Error("Error generating token", err)
 		return nil, err
 	}
-	return &dto.UserToken{Token: t, User: *u}, nil
+	go func(user *user.User) {
+		err := s.UserRepo.SetIsAccess(user)
+		if err != nil {
+			logger.Log.Error("error setting user access", err)
+		}
+	}(u)
+
+	return &user.UserWithToken{Token: t, User: *u}, nil
 }
 func generateJwt(id string, time int64) (string, error) {
 	payload := jwt.MapClaims{
@@ -111,7 +119,7 @@ func (s *AuthService) InitSignIn(email string) error {
 	return nil
 }
 
-func (s *AuthService) SignIn(code string) (*dto.UserToken, error) {
+func (s *AuthService) SignIn(code string) (*user.UserWithToken, error) {
 	u, err := s.UserRepo.GetUserByAuthCode(code)
 	if err != nil {
 		logger.Log.Error("Error getting user by auth code", err)
@@ -122,15 +130,8 @@ func (s *AuthService) SignIn(code string) (*dto.UserToken, error) {
 		logger.Log.Error("Error generating token", err)
 		return nil, err
 	}
-	return &dto.UserToken{
+	return &user.UserWithToken{
 		User:  *u,
 		Token: t,
 	}, nil
-}
-func sendEmail(email string, code string) {
-
-}
-
-func verifyEmail(email string) {
-
 }

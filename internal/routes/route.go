@@ -3,8 +3,8 @@ package routes
 import (
 	"database/sql"
 
-	authHandler "github.com/f1k13/school-portal/internal/handlers/auth"
-	userHandler "github.com/f1k13/school-portal/internal/handlers/user"
+	authController "github.com/f1k13/school-portal/internal/controllers/auth"
+	userController "github.com/f1k13/school-portal/internal/controllers/user"
 	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/middleware"
 	repositories "github.com/f1k13/school-portal/internal/repositories/user"
@@ -23,11 +23,11 @@ func StartRouter(r *chi.Mux, db *sql.DB) {
 	authService := authService.NewAuthService(userRepo, emailService)
 	userService := userService.NewUserService(userRepo)
 
-	authHandler := authHandler.NewAuthHandler(authService, userService)
-	userHandler := userHandler.NewUserHandler(userService)
+	authController := authController.NewAuthController(authService, userService)
+	userController := userController.NewUserController(userService)
 
 	authMiddleware := middleware.NewAuthMiddleware()
 
-	authRoute.AuthRouter(r, authHandler)
-	userRoute.UserRoute(r, userHandler, authMiddleware)
+	authRoute.AuthRouter(r, authController)
+	userRoute.UserRoute(r, userController, authMiddleware)
 }

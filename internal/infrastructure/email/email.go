@@ -41,3 +41,4 @@ func (m *EmailService) SendEmail(to, subject, body string) error {
 	fmt.Printf("Message sent with ID: %s\n", id)
 	return nil
 }
+ 

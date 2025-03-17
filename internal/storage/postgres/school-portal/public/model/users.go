@@ -23,4 +23,5 @@ type Users struct {
 	PhoneNumber  string
 	CreatedAt    *time.Time
 	AuthCode     *string
+	IsAccess     bool
 }

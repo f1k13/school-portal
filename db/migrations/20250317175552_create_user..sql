@@ -9,7 +9,8 @@ CREATE TABLE users (
 		role TEXT NOT NULL,
 		phone_number TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
-    auth_code TEXT
+    auth_code TEXT,
+    is_access BOOL DEFAULT FALSE NOT NULL 
 );
 
 -- +goose Down

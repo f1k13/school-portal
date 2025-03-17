@@ -23,5 +23,5 @@ mig-down:
 
 # Generate Jet ORM code
 db-gen:
-	jet -dsn=$(DATABASE_URL) -schema=public -path=./internal/storage/postgres
+	jet -dsn="postgres://postgres:1234@localhost:5432/school-portal?sslmode=disable" -schema=public -path=./internal/storage/postgres
 	sh ./model_postgen.sh

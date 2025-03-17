@@ -27,6 +27,7 @@ type usersTable struct {
 	PhoneNumber  postgres.ColumnString
 	CreatedAt    postgres.ColumnTimestamp
 	AuthCode     postgres.ColumnString
+	IsAccess     postgres.ColumnBool
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -77,8 +78,9 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		PhoneNumberColumn  = postgres.StringColumn("phone_number")
 		CreatedAtColumn    = postgres.TimestampColumn("created_at")
 		AuthCodeColumn     = postgres.StringColumn("auth_code")
-		allColumns         = postgres.ColumnList{IDColumn, FirstNameColumn, LastNameColumn, EmailColumn, MiddleNameColumn, RefreshTokenColumn, RoleColumn, PhoneNumberColumn, CreatedAtColumn, AuthCodeColumn}
-		mutableColumns     = postgres.ColumnList{FirstNameColumn, LastNameColumn, EmailColumn, MiddleNameColumn, RefreshTokenColumn, RoleColumn, PhoneNumberColumn, CreatedAtColumn, AuthCodeColumn}
+		IsAccessColumn     = postgres.BoolColumn("is_access")
+		allColumns         = postgres.ColumnList{IDColumn, FirstNameColumn, LastNameColumn, EmailColumn, MiddleNameColumn, RefreshTokenColumn, RoleColumn, PhoneNumberColumn, CreatedAtColumn, AuthCodeColumn, IsAccessColumn}
+		mutableColumns     = postgres.ColumnList{FirstNameColumn, LastNameColumn, EmailColumn, MiddleNameColumn, RefreshTokenColumn, RoleColumn, PhoneNumberColumn, CreatedAtColumn, AuthCodeColumn, IsAccessColumn}
 	)
 
 	return usersTable{
@@ -95,6 +97,7 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		PhoneNumber:  PhoneNumberColumn,
 		CreatedAt:    CreatedAtColumn,
 		AuthCode:     AuthCodeColumn,
+		IsAccess:     IsAccessColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,
