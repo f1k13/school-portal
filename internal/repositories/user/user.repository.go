@@ -160,7 +160,7 @@ func (r *UserRepository) SetIsAccess(user *user.User) error {
 }
 
 func (r *UserRepository) CreateProfile(dto *dto.UserProfileDto, userID uuid.UUID) (*user.Profile, error) {
-	profile := user.Profile{	
+	profile := user.Profile{
 		ID:          uuid.New(),
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,
@@ -182,4 +182,30 @@ func (r *UserRepository) CreateProfile(dto *dto.UserProfileDto, userID uuid.UUID
 	}
 
 	return &dest[0], nil
+}
+func (r *UserRepository) GetProfileWithUser(userID uuid.UUID) (*user.UserProfile, error) {
+	stmt := table.Profiles.SELECT(table.Profiles.AllColumns, table.Users.AllColumns).FROM(table.Profiles.LEFT_JOIN(table.Users, table.Users.ID.EQ(table.Profiles.UserID))).WHERE(table.Profiles.UserID.EQ(postgres.UUID(userID)))
+
+	var dest user.UserProfile
+	err := stmt.Query(r.DB, &dest)
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("profile not found")
+		}
+		return nil, err
+	}
+	return &dest, nil
+}
+func (r *UserRepository) GetProfile(userID uuid.UUID) (*user.Profile, error) {
+	stmt := table.Profiles.SELECT(table.Profiles.AllColumns).FROM(table.Profiles).WHERE(table.Profiles.UserID.EQ(postgres.UUID(userID)))
+
+	var dest user.Profile
+	err := stmt.Query(r.DB, &dest)
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("profile not found")
+		}
+		return nil, err
+	}
+	return &dest, nil
 }

@@ -54,3 +54,25 @@ func (c *UserController) ProfilePost(w http.ResponseWriter, r *http.Request) {
 	}
 	c.controllers.ResponseJson(w, http.StatusCreated, res)
 }
+
+func (c *UserController) GetProfile(w http.ResponseWriter, r *http.Request) {
+	userID := c.controllers.GetUserIDCtx(r.Context())
+
+	profile, err := c.UserService.GetProfile(userID)
+	if err != nil {
+		logger.Log.Error("error in get profile handler", err)
+		res := controllers.Response{Message: err.Error()}
+		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
+		return
+	}
+
+	res := user.UserProfileRes{
+		Response: controllers.Response{Message: "Успешно"},
+		UserProfile: user.UserProfile{
+			User:    profile.User,
+			Profile: profile.Profile,
+		},
+	}
+
+	c.controllers.ResponseJson(w, http.StatusOK, res)
+}

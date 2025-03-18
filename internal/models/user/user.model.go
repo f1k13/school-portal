@@ -21,3 +21,11 @@ type UserSelfRes struct {
 	controllers.Response
 	User *model.Users
 }
+type UserProfile struct {
+	User
+	Profile
+}
+type UserProfileRes struct {
+	controllers.Response
+	UserProfile
+}
