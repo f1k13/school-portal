@@ -10,19 +10,16 @@ import (
 	"github.com/f1k13/school-portal/internal/models/auth"
 	"github.com/f1k13/school-portal/internal/models/user"
 	authService "github.com/f1k13/school-portal/internal/services/auth"
-	userService "github.com/f1k13/school-portal/internal/services/user"
 )
 
 type AuthController struct {
 	AuthService *authService.AuthService
-	UserService *userService.UserService
 	controllers *controllers.Controller
 }
 
-func NewAuthController(authService *authService.AuthService, userService *userService.UserService) *AuthController {
+func NewAuthController(authService *authService.AuthService) *AuthController {
 	return &AuthController{
 		AuthService: authService,
-		UserService: userService,
 		controllers: &controllers.Controller{},
 	}
 }

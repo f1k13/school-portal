@@ -34,12 +34,12 @@ func (s *AuthService) SignUp(code string) (*user.UserWithToken, error) {
 		logger.Log.Error("Error generating token", err)
 		return nil, err
 	}
-	go func(user *user.User) {
-		err := s.UserRepo.SetIsAccess(user)
+	go func() {
+		err := s.UserRepo.SetIsAccess(u)
 		if err != nil {
 			logger.Log.Error("error setting user access", err)
 		}
-	}(u)
+	}()
 
 	return &user.UserWithToken{Token: t, User: *u}, nil
 }

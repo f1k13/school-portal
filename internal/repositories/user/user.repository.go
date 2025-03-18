@@ -160,7 +160,7 @@ func (r *UserRepository) SetIsAccess(user *user.User) error {
 }
 
 func (r *UserRepository) CreateProfile(dto *dto.UserProfileDto, userID uuid.UUID) (*user.Profile, error) {
-	profile := user.Profile{
+	profile := user.Profile{	
 		ID:          uuid.New(),
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,

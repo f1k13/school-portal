@@ -23,7 +23,7 @@ func StartRouter(r *chi.Mux, db *sql.DB) {
 	authService := authService.NewAuthService(userRepo, emailService)
 	userService := userService.NewUserService(userRepo)
 
-	authController := authController.NewAuthController(authService, userService)
+	authController := authController.NewAuthController(authService)
 	userController := userController.NewUserController(userService)
 
 	authMiddleware := middleware.NewAuthMiddleware()
