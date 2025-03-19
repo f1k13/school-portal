@@ -3,8 +3,9 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"github.com/f1k13/school-portal/internal/middleware"
 	"net/http"
+
+	"github.com/f1k13/school-portal/internal/middleware/auth"
 )
 
 type Response struct {
@@ -21,6 +22,6 @@ func (h *Controller) ResponseJson(w http.ResponseWriter, status int, data interf
 }
 
 func (h *Controller) GetUserIDCtx(ctx context.Context) string {
-	userID, _ := ctx.Value(middleware.UserIDKey).(string)
+	userID, _ := ctx.Value(auth.UserIDKey).(string)
 	return userID
 }

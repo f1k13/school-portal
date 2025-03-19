@@ -11,16 +11,16 @@ import (
 	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/models/user"
-	repositories "github.com/f1k13/school-portal/internal/repositories/user"
+	userRepo "github.com/f1k13/school-portal/internal/repositories/user"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type AuthService struct {
-	UserRepo     *repositories.UserRepository
+	UserRepo     *userRepo.UserRepository
 	EmailService email.EmailService
 }
 
-func NewAuthService(userRepo *repositories.UserRepository, emailService *email.EmailService) *AuthService {
+func NewAuthService(userRepo *userRepo.UserRepository, emailService *email.EmailService) *AuthService {
 	return &AuthService{UserRepo: userRepo, EmailService: *emailService}
 }
 func (s *AuthService) SignUp(code string) (*user.UserWithToken, error) {
