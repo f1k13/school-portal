@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/f1k13/school-portal/internal/dto"
+	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/models/user"
 
@@ -21,7 +21,7 @@ type UserRepository struct {
 func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{DB: db}
 }
-func (r *UserRepository) CreateUser(userDto dto.UserDto) (*user.User, error) {
+func (r *UserRepository) CreateUser(userDto userDto.UserDto) (*user.User, error) {
 	u := model.Users{
 		ID:    uuid.New(),
 		Email: userDto.Email,
@@ -159,17 +159,17 @@ func (r *UserRepository) SetIsAccess(user *user.User) error {
 	return nil
 }
 
-func (r *UserRepository) CreateProfile(dto *dto.UserProfileDto, userID uuid.UUID) (*user.Profile, error) {
-	profile := user.Profile{
+func (r *UserRepository) CreateProfile(dto *userDto.UserProfileDto) (*user.Profile, error) {
+	data := user.Profile{
 		ID:          uuid.New(),
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,
 		PhoneNumber: dto.PhoneNumber,
 		AvatarURL:   dto.AvatarUrl,
 		Dob:         dto.Dob,
-		UserID:      userID,
+		UserID:      *dto.UserId,
 	}
-	stmt := table.Profiles.INSERT(table.Profiles.AllColumns).MODEL(profile).RETURNING(table.Profiles.AllColumns)
+	stmt := table.Profiles.INSERT(table.Profiles.AllColumns).MODEL(data).RETURNING(table.Profiles.AllColumns)
 	var dest []user.Profile
 
 	err := stmt.Query(r.DB, &dest)

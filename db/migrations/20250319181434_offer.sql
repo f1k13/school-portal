@@ -55,7 +55,8 @@ CREATE TABLE skills (
 CREATE TABLE offer_experiences (
     offer_id UUID NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
     experience_id UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
-    PRIMARY KEY (offer_id, experience_id)
+    PRIMARY KEY (offer_id, experience_id),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 );
 
 -- Таблица связей объявлений с умениями

@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/f1k13/school-portal/internal/dto"
+	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/models/user"
@@ -58,7 +58,7 @@ func generateJwt(id string, time int64) (string, error) {
 	return t, nil
 }
 
-func (s *AuthService) InitSignUp(user dto.UserDto) error {
+func (s *AuthService) InitSignUp(user userDto.UserDto) error {
 	userExist, err := s.UserRepo.GetUserByEmail(user.Email)
 	if err != nil && err.Error() != "user not found" {
 		logger.Log.Error("Error getting user by email", err)

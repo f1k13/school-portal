@@ -7,5 +7,5 @@ import (
 )
 
 func OfferRoute(r *chi.Mux, offerController *offerController.OfferController, authMiddleware *auth.AuthMiddleWare) {
-
+	r.With(authMiddleware.Auth).Post("/offer/post", offerController.CreateOffer)
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	controllers "github.com/f1k13/school-portal/internal/controllers"
-	"github.com/f1k13/school-portal/internal/dto"
+	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/models/auth"
 	"github.com/f1k13/school-portal/internal/models/user"
@@ -49,7 +49,7 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AuthController) InitAuthSignUp(w http.ResponseWriter, r *http.Request) {
-	var userDto dto.UserDto
+	var userDto userDto.UserDto
 	if err := json.NewDecoder(r.Body).Decode(&userDto); err != nil {
 		res := controllers.Response{Message: err.Error()}
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)

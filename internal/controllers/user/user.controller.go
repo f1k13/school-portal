@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/f1k13/school-portal/internal/controllers"
-	"github.com/f1k13/school-portal/internal/dto"
+	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/models/user"
 	userService "github.com/f1k13/school-portal/internal/services/user"
@@ -37,7 +37,7 @@ func (c *UserController) GetSelf(w http.ResponseWriter, r *http.Request) {
 }
 func (c *UserController) ProfilePost(w http.ResponseWriter, r *http.Request) {
 	userID := c.controllers.GetUserIDCtx(r.Context())
-	var req dto.UserProfileDto
+	var req userDto.UserProfileDto
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		res := controllers.Response{Message: err.Error()}
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
