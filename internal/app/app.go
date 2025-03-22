@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	offerAdapter "github.com/f1k13/school-portal/internal/domain/adapter/offer"
+	userAdapter "github.com/f1k13/school-portal/internal/domain/adapter/user"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
@@ -63,9 +65,11 @@ func StartApp() {
 
 	r := chi.NewRouter()
 	logger.Log.Info("SERVER START ON PORT", 3000)
-	http.ListenAndServe(":3000", r)
-	userRepo := userRepo.NewUserRepository(DB)
-	offerRepo := offerRepo.NewOfferRepository(DB)
+
+	userToModelAdapter := userAdapter.NewUserToModelAdapter()
+	offerToModelAdapter := offerAdapter.NewOfferToModelAdapter()
+	userRepo := userRepo.NewUserRepository(DB, userToModelAdapter)
+	offerRepo := offerRepo.NewOfferRepository(DB, offerToModelAdapter)
 	educationRepo := educationRepo.NewEducationRepository(DB)
 
 	emailService := email.NewEmailInfrastructure()
@@ -82,8 +86,14 @@ func StartApp() {
 
 	authMiddleware := auth.NewAuthMiddleware()
 
-	// authRoute.AuthRouter(r, authController)
-	userRoute.UserRoute(r, userController, authMiddleware)
-	offerRoute.OfferRoute(r, offerController, authMiddleware)
-	educationRoute.EducationRoute(r, educationController, authMiddleware)
+	authRoutes := authRoute.NewAuthRouter(r, authController)
+	authRoutes.AuthRouter()
+	userRoutes := userRoute.NewUserRouter(r, userController, authMiddleware)
+	userRoutes.UserRouter()
+	offerRoutes := offerRoute.NewOfferRouter(r, offerController, authMiddleware)
+	offerRoutes.OfferRouter()
+	educationRoutes := educationRoute.NewEducationRouter(r, educationController, authMiddleware)
+	educationRoutes.EducationRouter()
+	http.ListenAndServe(":3000", r)
+
 }

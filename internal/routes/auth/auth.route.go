@@ -10,7 +10,7 @@ type AuthRoute struct {
 	router         *chi.Mux
 }
 
-func NewAuthRouter(authController *authController.AuthController, r *chi.Mux) *AuthRoute {
+func NewAuthRouter(r *chi.Mux, authController *authController.AuthController) *AuthRoute {
 	return &AuthRoute{
 		authController: authController,
 		router:         r,

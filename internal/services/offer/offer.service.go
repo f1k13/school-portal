@@ -3,9 +3,9 @@ package offerService
 import (
 	"errors"
 
+	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/offer"
 	offerRepo "github.com/f1k13/school-portal/internal/repositories/offer"
 	"github.com/google/uuid"
 )

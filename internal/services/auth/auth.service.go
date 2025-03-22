@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/f1k13/school-portal/internal/domain/models/user"
 	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/infrastructure/email"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/user"
 	userRepo "github.com/f1k13/school-portal/internal/repositories/user"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -64,8 +64,9 @@ func (s *AuthService) InitSignUp(user userDto.UserDto) error {
 		logger.Log.Error("Error getting user by email", err)
 		return err
 	}
-	if userExist != nil {
-		return errors.New("user already exists")
+	if userExist != nil && !userExist.Verified {
+		s.InitSignIn(user.Email)
+		return nil
 	}
 
 	u, err := s.UserRepo.CreateUser(user)

@@ -4,28 +4,24 @@ import (
 	"database/sql"
 	"errors"
 
+	offerAdapter "github.com/f1k13/school-portal/internal/domain/adapter/offer"
+	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/offer"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
-	"github.com/google/uuid"
 )
 
 type OfferRepository struct {
-	db *sql.DB
+	db      *sql.DB
+	adapter *offerAdapter.OfferToModelAdapter
 }
 
-func NewOfferRepository(db *sql.DB) *OfferRepository {
-	return &OfferRepository{db: db}
+func NewOfferRepository(db *sql.DB, adapter *offerAdapter.OfferToModelAdapter) *OfferRepository {
+	return &OfferRepository{db: db, adapter: adapter}
 }
 
 func (r *OfferRepository) CreateOffer(dto offerDto.OfferDto) (*offer.Offer, error) {
-	data := offer.Offer{
-		ID:          uuid.New(),
-		Price:       dto.Price,
-		DirectionID: *dto.DirectionId,
-		UserID:      *dto.UserId,
-	}
+	data := r.adapter.CreateOfferAdapter(&dto)
 	stmt := table.Offers.INSERT(table.Offers.AllColumns).MODEL(data).RETURNING(table.Offers.AllColumns)
 
 	var dest []offer.Offer

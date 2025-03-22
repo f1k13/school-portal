@@ -6,9 +6,23 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func UserRoute(r *chi.Mux, userController *userController.UserController, authMiddleware *auth.AuthMiddleWare) {
+type UserRoute struct {
+	userController *userController.UserController
+	router         *chi.Mux
+	authMiddleware *auth.AuthMiddleWare
+}
 
-	r.With(authMiddleware.Auth).Get("/user/get-self", userController.GetSelf)
-	r.With(authMiddleware.Auth).Post("/user/profile/post", userController.ProfilePost)
-	r.With(authMiddleware.Auth).Get("/user/profile/get", userController.GetProfile)
+func NewUserRouter(r *chi.Mux, userController *userController.UserController, authMiddleware *auth.AuthMiddleWare) *UserRoute {
+	return &UserRoute{
+		userController: userController,
+		router:         r,
+		authMiddleware: authMiddleware,
+	}
+}
+
+func (r *UserRoute) UserRouter() {
+
+	r.router.With(r.authMiddleware.Auth).Get("/user/get-self", r.userController.GetSelf)
+	r.router.With(r.authMiddleware.Auth).Post("/user/profile/post", r.userController.ProfilePost)
+	r.router.With(r.authMiddleware.Auth).Get("/user/profile/get", r.userController.GetProfile)
 }

@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	controllers "github.com/f1k13/school-portal/internal/controllers"
+	"github.com/f1k13/school-portal/internal/domain/models/auth"
+	"github.com/f1k13/school-portal/internal/domain/models/user"
 	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/auth"
-	"github.com/f1k13/school-portal/internal/models/user"
 	authService "github.com/f1k13/school-portal/internal/services/auth"
 )
 

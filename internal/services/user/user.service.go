@@ -3,10 +3,9 @@ package userService
 import (
 	"errors"
 
+	"github.com/f1k13/school-portal/internal/domain/models/user"
 	userDto "github.com/f1k13/school-portal/internal/dto/user"
-	"github.com/f1k13/school-portal/internal/models/user"
 	repositories "github.com/f1k13/school-portal/internal/repositories/user"
-	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/google/uuid"
 )
 
@@ -26,7 +25,7 @@ func (s *UserService) GetUserByID(id string) (*user.User, error) {
 	return s.UserRepo.GetUserByID(id)
 }
 
-func (s *UserService) CreateProfile(dto *userDto.UserProfileDto, userID string) (*model.Profiles, error) {
+func (s *UserService) CreateProfile(dto *userDto.UserProfileDto, userID string) (*user.Profile, error) {
 	uuidID, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, errors.New("invalid UUID format")

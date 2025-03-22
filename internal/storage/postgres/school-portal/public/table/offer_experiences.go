@@ -19,6 +19,7 @@ type offerExperiencesTable struct {
 	// Columns
 	OfferID      postgres.ColumnString
 	ExperienceID postgres.ColumnString
+	UserID       postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -61,8 +62,9 @@ func newOfferExperiencesTableImpl(schemaName, tableName, alias string) offerExpe
 	var (
 		OfferIDColumn      = postgres.StringColumn("offer_id")
 		ExperienceIDColumn = postgres.StringColumn("experience_id")
-		allColumns         = postgres.ColumnList{OfferIDColumn, ExperienceIDColumn}
-		mutableColumns     = postgres.ColumnList{}
+		UserIDColumn       = postgres.StringColumn("user_id")
+		allColumns         = postgres.ColumnList{OfferIDColumn, ExperienceIDColumn, UserIDColumn}
+		mutableColumns     = postgres.ColumnList{UserIDColumn}
 	)
 
 	return offerExperiencesTable{
@@ -71,6 +73,7 @@ func newOfferExperiencesTableImpl(schemaName, tableName, alias string) offerExpe
 		//Columns
 		OfferID:      OfferIDColumn,
 		ExperienceID: ExperienceIDColumn,
+		UserID:       UserIDColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

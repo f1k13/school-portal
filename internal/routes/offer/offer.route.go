@@ -6,6 +6,20 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func OfferRoute(r *chi.Mux, offerController *offerController.OfferController, authMiddleware *auth.AuthMiddleWare) {
-	r.With(authMiddleware.Auth).Post("/offer/post", offerController.CreateOffer)
+type OfferRoute struct {
+	offerController *offerController.OfferController
+	router          *chi.Mux
+	authMiddleware  *auth.AuthMiddleWare
+}
+
+func NewOfferRouter(r *chi.Mux, offerController *offerController.OfferController, authMiddleware *auth.AuthMiddleWare) *OfferRoute {
+	return &OfferRoute{
+		offerController: offerController,
+		router:          r,
+		authMiddleware:  authMiddleware,
+	}
+}
+
+func (r *OfferRoute) OfferRouter() {
+	r.router.With(r.authMiddleware.Auth).Post("/offer/post", r.offerController.CreateOffer)
 }

@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/f1k13/school-portal/internal/controllers"
+	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
-	"github.com/f1k13/school-portal/internal/models/offer"
 	offerService "github.com/f1k13/school-portal/internal/services/offer"
 )
 
@@ -23,32 +23,33 @@ func NewOfferController(offerService *offerService.OfferService) *OfferControlle
 	}
 }
 
-func (h *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
+func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 	var req offerDto.OfferDto
-	userID := h.controllers.GetUserIDCtx(r.Context())
+	userID := c.controllers.GetUserIDCtx(r.Context())
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		logger.Log.Error("error decoding json", err)
 		res := controllers.Response{Message: err.Error()}
-		h.controllers.ResponseJson(w, http.StatusBadRequest, res)
+		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
+		return
 	}
 
-	o, err := h.offerService.CreateOffer(req, userID)
+	o, err := c.offerService.CreateOffer(req, userID)
 	if err != nil {
 		logger.Log.Error("error in create offer handler", err)
 		res := controllers.Response{Message: err.Error()}
-		h.controllers.ResponseJson(w, http.StatusBadRequest, res)
+		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
 
 	res := offer.OfferRes{Response: controllers.Response{Message: "Успешно"}, Offer: *o}
-	h.controllers.ResponseJson(w, http.StatusCreated, res)
+	c.controllers.ResponseJson(w, http.StatusCreated, res)
 
 }
 
-func (h *OfferController) GetOffer(w http.ResponseWriter, r *http.Request) {}
+func (c *OfferController) GetOffer(w http.ResponseWriter, r *http.Request) {}
 
-func (h *OfferController) CreateEducation(w http.ResponseWriter, r *http.Request) {}
+func (ch *OfferController) CreateEducation(w http.ResponseWriter, r *http.Request) {}
 
-func (h *OfferController) CreateExperiences(w http.ResponseWriter, r *http.Request) {}
+func (c *OfferController) CreateExperiences(w http.ResponseWriter, r *http.Request) {}
 
-func (h *OfferController) CreateSkills(w http.ResponseWriter, r *http.Request) {}
+func (c *OfferController) CreateSkills(w http.ResponseWriter, r *http.Request) {}

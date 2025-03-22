@@ -14,4 +14,5 @@ import (
 type OfferExperiences struct {
 	OfferID      uuid.UUID `sql:"primary_key"`
 	ExperienceID uuid.UUID `sql:"primary_key"`
+	UserID       uuid.UUID
 }
