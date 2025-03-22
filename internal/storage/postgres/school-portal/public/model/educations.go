@@ -17,7 +17,8 @@ type Educations struct {
 	UserID      uuid.UUID
 	Institution string
 	Degree      string
-	Year        int32
+	StartYear   int32
+	EndYear     int32
 	City        string
 	CreatedAt   *time.Time
 }

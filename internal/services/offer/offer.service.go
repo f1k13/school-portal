@@ -20,7 +20,7 @@ func NewOfferService(offerRepo *offerRepo.OfferRepository) *OfferService {
 	}
 }
 
-func (s *OfferService) CreateOffer(dto offerDto.OfferDto, userID string) (*offer.Offer, error) {
+func (s *OfferService) CreateOffer(dto offerDto.OfferDto, userID string) (*offer.OfferModel, error) {
 	userIDUUID, err := uuid.Parse(userID)
 	if err != nil {
 		logger.Log.Error("error parsing uuid", err)

@@ -20,11 +20,11 @@ func NewOfferRepository(db *sql.DB, adapter *offerAdapter.OfferToModelAdapter) *
 	return &OfferRepository{db: db, adapter: adapter}
 }
 
-func (r *OfferRepository) CreateOffer(dto offerDto.OfferDto) (*offer.Offer, error) {
+func (r *OfferRepository) CreateOffer(dto offerDto.OfferDto) (*offer.OfferModel, error) {
 	data := r.adapter.CreateOfferAdapter(&dto)
 	stmt := table.Offers.INSERT(table.Offers.AllColumns).MODEL(data).RETURNING(table.Offers.AllColumns)
 
-	var dest []offer.Offer
+	var dest []offer.OfferModel
 	err := stmt.Query(r.db, &dest)
 	if err != nil {
 		logger.Log.Error("error in create offer", err)

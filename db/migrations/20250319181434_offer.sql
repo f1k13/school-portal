@@ -22,7 +22,8 @@ CREATE TABLE educations (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     institution TEXT NOT NULL, 
     degree TEXT NOT NULL,     
-    year INT NOT NULL,        
+    start_year INT NOT NULL,
+    end_year INT NOT NULL,        
 	city TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now()
 );

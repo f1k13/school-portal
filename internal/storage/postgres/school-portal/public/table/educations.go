@@ -21,7 +21,8 @@ type educationsTable struct {
 	UserID      postgres.ColumnString
 	Institution postgres.ColumnString
 	Degree      postgres.ColumnString
-	Year        postgres.ColumnInteger
+	StartYear   postgres.ColumnInteger
+	EndYear     postgres.ColumnInteger
 	City        postgres.ColumnString
 	CreatedAt   postgres.ColumnTimestamp
 
@@ -68,11 +69,12 @@ func newEducationsTableImpl(schemaName, tableName, alias string) educationsTable
 		UserIDColumn      = postgres.StringColumn("user_id")
 		InstitutionColumn = postgres.StringColumn("institution")
 		DegreeColumn      = postgres.StringColumn("degree")
-		YearColumn        = postgres.IntegerColumn("year")
+		StartYearColumn   = postgres.IntegerColumn("start_year")
+		EndYearColumn     = postgres.IntegerColumn("end_year")
 		CityColumn        = postgres.StringColumn("city")
 		CreatedAtColumn   = postgres.TimestampColumn("created_at")
-		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, InstitutionColumn, DegreeColumn, YearColumn, CityColumn, CreatedAtColumn}
-		mutableColumns    = postgres.ColumnList{UserIDColumn, InstitutionColumn, DegreeColumn, YearColumn, CityColumn, CreatedAtColumn}
+		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, InstitutionColumn, DegreeColumn, StartYearColumn, EndYearColumn, CityColumn, CreatedAtColumn}
+		mutableColumns    = postgres.ColumnList{UserIDColumn, InstitutionColumn, DegreeColumn, StartYearColumn, EndYearColumn, CityColumn, CreatedAtColumn}
 	)
 
 	return educationsTable{
@@ -83,7 +85,8 @@ func newEducationsTableImpl(schemaName, tableName, alias string) educationsTable
 		UserID:      UserIDColumn,
 		Institution: InstitutionColumn,
 		Degree:      DegreeColumn,
-		Year:        YearColumn,
+		StartYear:   StartYearColumn,
+		EndYear:     EndYearColumn,
 		City:        CityColumn,
 		CreatedAt:   CreatedAtColumn,
 

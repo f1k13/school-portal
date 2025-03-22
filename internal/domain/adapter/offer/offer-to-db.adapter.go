@@ -12,6 +12,6 @@ func NewOfferToModelAdapter() *OfferToModelAdapter {
 	return &OfferToModelAdapter{}
 }
 
-func (a *OfferToModelAdapter) CreateOfferAdapter(dto *offerDto.OfferDto) *offer.Offer {
-	return &offer.Offer{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId}
+func (a *OfferToModelAdapter) CreateOfferAdapter(dto *offerDto.OfferDto) *offer.OfferModel {
+	return &offer.OfferModel{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId}
 }

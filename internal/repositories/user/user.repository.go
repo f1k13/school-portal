@@ -22,7 +22,7 @@ type UserRepository struct {
 func NewUserRepository(db *sql.DB, adapter *userAdapter.UserToModelAdapter) *UserRepository {
 	return &UserRepository{DB: db, adapter: adapter}
 }
-func (r *UserRepository) CreateUser(userDto userDto.UserDto) (*user.User, error) {
+func (r *UserRepository) CreateUser(userDto userDto.UserDto) (*user.UserModel, error) {
 	u := r.adapter.CreateUserAdapter(&userDto)
 	existUser, err := r.GetUserByEmail(userDto.Email)
 	if err != nil && err.Error() != "user not found" {
@@ -34,7 +34,7 @@ func (r *UserRepository) CreateUser(userDto userDto.UserDto) (*user.User, error)
 	stmt := table.Users.INSERT(table.Users.ID,
 		table.Users.Email,
 		table.Users.Role, table.Users.RefreshToken).MODEL(u).RETURNING(table.Users.AllColumns)
-	var dest []user.User
+	var dest []user.UserModel
 	err = stmt.Query(r.DB, &dest)
 
 	if err != nil {
@@ -46,14 +46,14 @@ func (r *UserRepository) CreateUser(userDto userDto.UserDto) (*user.User, error)
 	return &dest[0], nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*user.User, error) {
+func (r *UserRepository) GetUserByEmail(email string) (*user.UserModel, error) {
 	if email == "" {
 		return nil, errors.New("email is empty")
 	}
 	stmt := table.Users.SELECT(table.Users.AllColumns).FROM(table.Users).WHERE(
 		table.Users.Email.EQ(postgres.String(email)),
 	)
-	var dest user.User
+	var dest user.UserModel
 	err := stmt.Query(r.DB, &dest)
 
 	if err != nil {
@@ -66,8 +66,8 @@ func (r *UserRepository) GetUserByEmail(email string) (*user.User, error) {
 	logger.Log.Info("dest", dest)
 	return &dest, nil
 }
-func (r *UserRepository) SetAuthCode(u *user.User, authCode string) error {
-	updatedUser := user.User{
+func (r *UserRepository) SetAuthCode(u *user.UserModel, authCode string) error {
+	updatedUser := user.UserModel{
 		AuthCode: authCode,
 	}
 
@@ -82,8 +82,8 @@ func (r *UserRepository) SetAuthCode(u *user.User, authCode string) error {
 	}
 	return nil
 }
-func (r *UserRepository) SetRefreshToken(u *user.User, refreshToken string) error {
-	updatedUser := user.User{
+func (r *UserRepository) SetRefreshToken(u *user.UserModel, refreshToken string) error {
+	updatedUser := user.UserModel{
 		RefreshToken: refreshToken,
 	}
 
@@ -99,14 +99,14 @@ func (r *UserRepository) SetRefreshToken(u *user.User, refreshToken string) erro
 	return nil
 }
 
-func (r *UserRepository) GetUserByAuthCode(code string) (*user.User, error) {
+func (r *UserRepository) GetUserByAuthCode(code string) (*user.UserModel, error) {
 	if code == "" {
 		return nil, errors.New("code is empty")
 	}
 	stmt := table.Users.SELECT(table.Users.AllColumns).FROM(table.Users).WHERE(
 		table.Users.AuthCode.EQ(postgres.String(code)),
 	)
-	var dest user.User
+	var dest user.UserModel
 	err := stmt.Query(r.DB, &dest)
 
 	if err != nil {
@@ -118,7 +118,7 @@ func (r *UserRepository) GetUserByAuthCode(code string) (*user.User, error) {
 	return &dest, nil
 }
 
-func (r *UserRepository) GetUserByID(id string) (*user.User, error) {
+func (r *UserRepository) GetUserByID(id string) (*user.UserModel, error) {
 	if id == "" {
 		return nil, errors.New("id is empty")
 	}
@@ -127,7 +127,7 @@ func (r *UserRepository) GetUserByID(id string) (*user.User, error) {
 		return nil, errors.New("invalid UUID format")
 	}
 	var stmt = table.Users.SELECT(table.Users.AllColumns).FROM(table.Users).WHERE(table.Users.ID.EQ(postgres.UUID(uuidID)))
-	var dest user.User
+	var dest user.UserModel
 	err = stmt.Query(r.DB, &dest)
 
 	if err != nil {
@@ -139,8 +139,8 @@ func (r *UserRepository) GetUserByID(id string) (*user.User, error) {
 	return &dest, err
 }
 
-func (r *UserRepository) SetIsAccess(u *user.User) error {
-	updatedUser := user.User{
+func (r *UserRepository) SetIsAccess(u *user.UserModel) error {
+	updatedUser := user.UserModel{
 		Verified: true,
 	}
 
@@ -156,10 +156,10 @@ func (r *UserRepository) SetIsAccess(u *user.User) error {
 	return nil
 }
 
-func (r *UserRepository) CreateProfile(dto *userDto.UserProfileDto) (*user.Profile, error) {
+func (r *UserRepository) CreateProfile(dto *userDto.UserProfileDto) (*user.ProfileModel, error) {
 	data := r.adapter.CreateProfileAdapter(dto)
 	stmt := table.Profiles.INSERT(table.Profiles.AllColumns).MODEL(data).RETURNING(table.Profiles.AllColumns)
-	var dest []user.Profile
+	var dest []user.ProfileModel
 
 	err := stmt.Query(r.DB, &dest)
 	if err != nil {
@@ -185,10 +185,10 @@ func (r *UserRepository) GetProfileWithUser(userID uuid.UUID) (*user.UserProfile
 	}
 	return &dest, nil
 }
-func (r *UserRepository) GetProfile(userID uuid.UUID) (*user.Profile, error) {
+func (r *UserRepository) GetProfile(userID uuid.UUID) (*user.ProfileModel, error) {
 	stmt := table.Profiles.SELECT(table.Profiles.AllColumns).FROM(table.Profiles).WHERE(table.Profiles.UserID.EQ(postgres.UUID(userID)))
 
-	var dest user.Profile
+	var dest user.ProfileModel
 	err := stmt.Query(r.DB, &dest)
 	if err != nil {
 		if err.Error() == "qrm: no rows in result set" {

@@ -17,15 +17,15 @@ func NewUserService(userRepo *repositories.UserRepository) *UserService {
 	return &UserService{UserRepo: userRepo}
 }
 
-func (s *UserService) GetUserByEmail(email string) (*user.User, error) {
+func (s *UserService) GetUserByEmail(email string) (*user.UserModel, error) {
 	return s.UserRepo.GetUserByEmail(email)
 }
 
-func (s *UserService) GetUserByID(id string) (*user.User, error) {
+func (s *UserService) GetUserByID(id string) (*user.UserModel, error) {
 	return s.UserRepo.GetUserByID(id)
 }
 
-func (s *UserService) CreateProfile(dto *userDto.UserProfileDto, userID string) (*user.Profile, error) {
+func (s *UserService) CreateProfile(dto *userDto.UserProfileDto, userID string) (*user.ProfileModel, error) {
 	uuidID, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, errors.New("invalid UUID format")

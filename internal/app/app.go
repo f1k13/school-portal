@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"os"
 
+	educationAdapter "github.com/f1k13/school-portal/internal/domain/adapter/education"
 	offerAdapter "github.com/f1k13/school-portal/internal/domain/adapter/offer"
 	userAdapter "github.com/f1k13/school-portal/internal/domain/adapter/user"
+	educationDataMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/education"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
@@ -68,9 +70,16 @@ func StartApp() {
 
 	userToModelAdapter := userAdapter.NewUserToModelAdapter()
 	offerToModelAdapter := offerAdapter.NewOfferToModelAdapter()
+	offerToEntityAdapter := offerAdapter.NewOfferToEntityAdapter()
+	educationToModelAdapter := educationAdapter.NewEducationToModelAdapter()
+	educationToEntityAdapter := educationAdapter.NewEducationToEntityAdapter()
+
+	educationToModelDataMapper := educationDataMapper.NewEducationDataMapper(educationToModelAdapter)
+	educationToEntityDataMapper := educationDataMapper.NewEducationToEntityDataMapper(educationToEntityAdapter)
+
 	userRepo := userRepo.NewUserRepository(DB, userToModelAdapter)
 	offerRepo := offerRepo.NewOfferRepository(DB, offerToModelAdapter)
-	educationRepo := educationRepo.NewEducationRepository(DB)
+	educationRepo := educationRepo.NewEducationRepository(DB, educationToModelDataMapper)
 
 	emailService := email.NewEmailInfrastructure()
 
@@ -81,8 +90,8 @@ func StartApp() {
 
 	authController := authController.NewAuthController(authService)
 	userController := userController.NewUserController(userService)
-	offerController := offerController.NewOfferController(offerService)
-	educationController := educationController.NewEducationController(educationService)
+	offerController := offerController.NewOfferController(offerService, offerToEntityAdapter)
+	educationController := educationController.NewEducationController(educationService, educationToEntityDataMapper)
 
 	authMiddleware := auth.NewAuthMiddleware()
 

@@ -6,24 +6,24 @@ import (
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 )
 
-type User = model.Users
-type Profile = model.Profiles
+type UserModel = model.Users
+type ProfileModel = model.Profiles
 type UserWithToken struct {
-	User  User
+	User  UserModel
 	Token string
 }
 type UserResponseAuth struct {
 	handlers.Response
-	User  User   `json:"user"`
-	Token string `json:"token"`
+	User  UserModel `json:"user"`
+	Token string    `json:"token"`
 }
 type UserSelfRes struct {
 	controllers.Response
 	User *model.Users
 }
 type UserProfile struct {
-	User
-	Profile
+	User    UserModel
+	Profile ProfileModel
 }
 type UserProfileRes struct {
 	controllers.Response

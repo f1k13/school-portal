@@ -12,16 +12,16 @@ func NewUserToModelAdapter() *UserToModelAdapter {
 	return &UserToModelAdapter{}
 }
 
-func (a *UserToModelAdapter) CreateUserAdapter(dto *userDto.UserDto) *user.User {
-	return &user.User{
+func (a *UserToModelAdapter) CreateUserAdapter(dto *userDto.UserDto) *user.UserModel {
+	return &user.UserModel{
 		ID:    uuid.New(),
 		Email: dto.Email,
 		Role:  dto.Role,
 	}
 }
 
-func (a *UserToModelAdapter) CreateProfileAdapter(dto *userDto.UserProfileDto) *user.Profile {
-	return &user.Profile{
+func (a *UserToModelAdapter) CreateProfileAdapter(dto *userDto.UserProfileDto) *user.ProfileModel {
+	return &user.ProfileModel{
 		ID:          uuid.New(),
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,
