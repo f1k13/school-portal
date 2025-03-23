@@ -15,10 +15,10 @@ func NewEducationToEntityDataMapper(adapter *educationAdapter.EducationToEntityA
 	}
 }
 
-func (a *EducationToEntityDataMapper) EducationAdapter(e *[]education.EducationModel) *[]education.Education {
+func (d *EducationToEntityDataMapper) EducationAdapter(e *[]education.EducationModel) *[]education.Education {
 	var educations []education.Education
 	for _, e := range *e {
-		educations = append(educations, *a.adapter.EducationAdapter(&e))
+		educations = append(educations, *d.adapter.EducationAdapter(&e))
 	}
 	return &educations
 }

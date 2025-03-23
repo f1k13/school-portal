@@ -49,7 +49,7 @@ func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (c *OfferController) GetOffer(w http.ResponseWriter, r *http.Request) {}
+func (c *OfferController) GetOfferById(w http.ResponseWriter, r *http.Request) {}
 
 func (ch *OfferController) CreateEducation(w http.ResponseWriter, r *http.Request) {}
 

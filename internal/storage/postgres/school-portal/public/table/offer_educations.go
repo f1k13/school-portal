@@ -17,6 +17,7 @@ type offerEducationsTable struct {
 	postgres.Table
 
 	// Columns
+	ID          postgres.ColumnString
 	OfferID     postgres.ColumnString
 	EducationID postgres.ColumnString
 
@@ -59,16 +60,18 @@ func newOfferEducationsTable(schemaName, tableName, alias string) *OfferEducatio
 
 func newOfferEducationsTableImpl(schemaName, tableName, alias string) offerEducationsTable {
 	var (
+		IDColumn          = postgres.StringColumn("id")
 		OfferIDColumn     = postgres.StringColumn("offer_id")
 		EducationIDColumn = postgres.StringColumn("education_id")
-		allColumns        = postgres.ColumnList{OfferIDColumn, EducationIDColumn}
-		mutableColumns    = postgres.ColumnList{}
+		allColumns        = postgres.ColumnList{IDColumn, OfferIDColumn, EducationIDColumn}
+		mutableColumns    = postgres.ColumnList{OfferIDColumn, EducationIDColumn}
 	)
 
 	return offerEducationsTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
+		ID:          IDColumn,
 		OfferID:     OfferIDColumn,
 		EducationID: EducationIDColumn,
 

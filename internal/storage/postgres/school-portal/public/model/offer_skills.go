@@ -12,6 +12,7 @@ import (
 )
 
 type OfferSkills struct {
-	OfferID uuid.UUID `sql:"primary_key"`
-	SkillID uuid.UUID `sql:"primary_key"`
+	ID      uuid.UUID `sql:"primary_key"`
+	OfferID uuid.UUID
+	SkillID uuid.UUID
 }

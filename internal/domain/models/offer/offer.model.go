@@ -8,6 +8,10 @@ import (
 
 type OfferModel = model.Offers
 
+type OfferExperienceModel = model.OfferExperiences
+
+type OfferEducationModel = model.OfferEducations
+
 type Offer struct {
 	ID          uuid.UUID `json:"id"`
 	Price       int32     `json:"price"`

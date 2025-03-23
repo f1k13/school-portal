@@ -48,4 +48,4 @@ func (s *OfferService) CreateExperienceOffer() {}
 
 func (s *OfferService) CreateSkillOffer() {}
 
-func (s *OfferService) GetOffer() {}
+func (s *OfferService) GetOfferById() {}

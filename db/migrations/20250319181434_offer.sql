@@ -39,9 +39,11 @@ CREATE TABLE experiences (
 
 -- Таблица связей объявлений с образованием
 CREATE TABLE offer_educations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     offer_id UUID NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
     education_id UUID NOT NULL REFERENCES educations(id) ON DELETE CASCADE,
-    PRIMARY KEY (offer_id, education_id)
+    UNIQUE (offer_id, education_id)
+    
 );
 
 -- Таблица умений
@@ -54,18 +56,19 @@ CREATE TABLE skills (
 );
 -- Таблица связей объявлений с опытом работы
 CREATE TABLE offer_experiences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     offer_id UUID NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
     experience_id UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    PRIMARY KEY (offer_id, experience_id)
-
+    UNIQUE (offer_id, experience_id)
 );
 
 -- Таблица связей объявлений с умениями
 CREATE TABLE offer_skills (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     offer_id UUID NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
     skill_id UUID NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
-    PRIMARY KEY (offer_id, skill_id)
+    UNIQUE (offer_id, skill_id)
 );
 
 -- +goose Down

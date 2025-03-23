@@ -27,7 +27,7 @@ func (r *EducationRepository) CreateEducation(dto *[]educationDto.EducationDto) 
 		stmt = stmt.MODEL(v).RETURNING(table.Educations.AllColumns)
 
 	}
-	err := stmt.RETURNING(table.Educations.AllColumns).Query(r.db, &dest)
+	err := stmt.Query(r.db, &dest)
 	if err != nil {
 		return nil, err
 	}
