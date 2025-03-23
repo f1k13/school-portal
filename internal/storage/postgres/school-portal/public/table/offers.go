@@ -21,6 +21,9 @@ type offersTable struct {
 	UserID      postgres.ColumnString
 	Price       postgres.ColumnInteger
 	DirectionID postgres.ColumnString
+	Title       postgres.ColumnString
+	Description postgres.ColumnString
+	IsOnline    postgres.ColumnBool
 	CreatedAt   postgres.ColumnTimestamp
 
 	AllColumns     postgres.ColumnList
@@ -66,9 +69,12 @@ func newOffersTableImpl(schemaName, tableName, alias string) offersTable {
 		UserIDColumn      = postgres.StringColumn("user_id")
 		PriceColumn       = postgres.IntegerColumn("price")
 		DirectionIDColumn = postgres.StringColumn("direction_id")
+		TitleColumn       = postgres.StringColumn("title")
+		DescriptionColumn = postgres.StringColumn("description")
+		IsOnlineColumn    = postgres.BoolColumn("is_online")
 		CreatedAtColumn   = postgres.TimestampColumn("created_at")
-		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, PriceColumn, DirectionIDColumn, CreatedAtColumn}
-		mutableColumns    = postgres.ColumnList{UserIDColumn, PriceColumn, DirectionIDColumn, CreatedAtColumn}
+		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, PriceColumn, DirectionIDColumn, TitleColumn, DescriptionColumn, IsOnlineColumn, CreatedAtColumn}
+		mutableColumns    = postgres.ColumnList{UserIDColumn, PriceColumn, DirectionIDColumn, TitleColumn, DescriptionColumn, IsOnlineColumn, CreatedAtColumn}
 	)
 
 	return offersTable{
@@ -79,6 +85,9 @@ func newOffersTableImpl(schemaName, tableName, alias string) offersTable {
 		UserID:      UserIDColumn,
 		Price:       PriceColumn,
 		DirectionID: DirectionIDColumn,
+		Title:       TitleColumn,
+		Description: DescriptionColumn,
+		IsOnline:    IsOnlineColumn,
 		CreatedAt:   CreatedAtColumn,
 
 		AllColumns:     allColumns,

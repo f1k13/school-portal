@@ -3,22 +3,28 @@ package offerDto
 import "github.com/google/uuid"
 
 type OfferDto struct {
-	Price       int32      `json:"price"`
-	DirectionId *uuid.UUID `json:"directionId"`
-	UserId      *uuid.UUID `json:"userId"`
+	Price         int32        `json:"price"`
+	DirectionId   *uuid.UUID   `json:"directionId"`
+	UserId        *uuid.UUID   `json:"userId"`
+	IsOnline      bool         `json:"isOnline"`
+	Title         string       `json:"title"`
+	Description   string       `json:"description"`
+	ExperienceIDS *[]uuid.UUID `json:"experienceIds"`
+	EducationIDS  *[]uuid.UUID `json:"educationIds"`
+	SkillIDS      *[]uuid.UUID `json:"skillIds"`
 }
 
 type OfferEducationDto struct {
-	EducationId *uuid.UUID `json:"educationId"`
-	OfferId     *uuid.UUID `json:"offerId"`
+	EducationIDS *[]uuid.UUID `json:"educationIds"`
+	OfferId      *uuid.UUID   `json:"offerId"`
 }
 
 type OfferExperienceDto struct {
-	ExperienceId *uuid.UUID `json:"experienceId"`
-	OfferId      *uuid.UUID `json:"offerId"`
+	ExperienceIDS *[]uuid.UUID `json:"experienceIds"`
+	OfferId       *uuid.UUID   `json:"offerId"`
 }
 
 type OfferSkillDto struct {
-	SkillId *uuid.UUID `json:"skillId"`
-	OfferId *uuid.UUID `json:"offerId"`
+	SkillIDS *[]uuid.UUID `json:"skillIds"`
+	OfferId  *uuid.UUID   `json:"offerId"`
 }

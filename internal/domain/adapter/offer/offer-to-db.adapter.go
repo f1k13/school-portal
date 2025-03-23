@@ -16,10 +16,38 @@ func (a *OfferToModelAdapter) CreateOfferAdapter(dto offerDto.OfferDto) offer.Of
 	return offer.OfferModel{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId}
 }
 
-func (a *OfferToModelAdapter) CreateOfferEducationAdapter(dto offerDto.OfferEducationDto) offer.OfferEducationModel {
-	return offer.OfferEducationModel{ID: uuid.New(), EducationID: *dto.EducationId, OfferID: *dto.OfferId}
+func (a *OfferToModelAdapter) CreateOfferEducationAdapter(dto offerDto.OfferEducationDto) []offer.OfferEducationModel {
+	var models []offer.OfferEducationModel
+	for _, educationID := range *dto.EducationIDS {
+		models = append(models, offer.OfferEducationModel{
+			ID:          uuid.New(),
+			EducationID: educationID,
+			OfferID:     *dto.OfferId,
+		})
+	}
+	return models
 }
 
-func (a *OfferToModelAdapter) CreateOfferExperienceAdapter(dto offerDto.OfferExperienceDto) offer.OfferExperienceModel {
-	return offer.OfferExperienceModel{ID: uuid.New(), ExperienceID: *dto.ExperienceId, OfferID: *dto.OfferId}
+func (a *OfferToModelAdapter) CreateOfferExperienceAdapter(dto offerDto.OfferExperienceDto) []offer.OfferExperienceModel {
+	var models []offer.OfferExperienceModel
+	for _, experienceID := range *dto.ExperienceIDS {
+		models = append(models, offer.OfferExperienceModel{
+			ID:           uuid.New(),
+			ExperienceID: experienceID,
+			OfferID:      *dto.OfferId,
+		})
+	}
+	return models
+}
+
+func (a *OfferToModelAdapter) CreateOfferSkillAdapter(dto offerDto.OfferSkillDto) []offer.OfferSkillModel {
+	var models []offer.OfferSkillModel
+	for _, skillID := range *dto.SkillIDS {
+		models = append(models, offer.OfferSkillModel{
+			ID:      uuid.New(),
+			SkillID: skillID,
+			OfferID: *dto.OfferId,
+		})
+	}
+	return models
 }

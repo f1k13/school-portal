@@ -12,6 +12,8 @@ type OfferExperienceModel = model.OfferExperiences
 
 type OfferEducationModel = model.OfferEducations
 
+type OfferSkillModel = model.OfferSkills
+
 type Offer struct {
 	ID          uuid.UUID `json:"id"`
 	Price       int32     `json:"price"`

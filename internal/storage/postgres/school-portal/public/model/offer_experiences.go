@@ -15,5 +15,4 @@ type OfferExperiences struct {
 	ID           uuid.UUID `sql:"primary_key"`
 	OfferID      uuid.UUID
 	ExperienceID uuid.UUID
-	UserID       uuid.UUID
 }

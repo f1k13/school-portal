@@ -17,5 +17,8 @@ type Offers struct {
 	UserID      uuid.UUID
 	Price       int32
 	DirectionID uuid.UUID
+	Title       string
+	Description string
+	IsOnline    bool
 	CreatedAt   *time.Time
 }

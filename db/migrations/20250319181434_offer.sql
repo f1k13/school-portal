@@ -13,6 +13,9 @@ CREATE table offers (
 	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	price INT NOT NULL,
 	direction_id UUID NOT NULL REFERENCES direction(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    is_online BOOLEAN NOT NULL,
 	created_at TIMESTAMP DEFAULT now()
 );
 
@@ -59,7 +62,6 @@ CREATE TABLE offer_experiences (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     offer_id UUID NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
     experience_id UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (offer_id, experience_id)
 );
 

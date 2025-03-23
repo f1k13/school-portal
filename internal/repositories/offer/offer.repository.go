@@ -51,32 +51,59 @@ func (r *OfferRepository) GetOfferById(id uuid.UUID) (*offer.Offer, error) {
 	return &dest, nil
 }
 
-func (r *OfferRepository) CreateOfferEducation(dto offerDto.OfferEducationDto) (*offer.OfferEducationModel, error) {
+func (r *OfferRepository) CreateOfferEducation(dto offerDto.OfferEducationDto) error {
+
 	data := r.adapter.CreateOfferEducationAdapter(dto)
-	stmt := table.OfferEducations.INSERT(table.OfferEducations.AllColumns).MODEL(data).RETURNING(table.OfferEducations.AllColumns)
 	var dest []offer.OfferEducationModel
+	stmt := table.OfferEducations.INSERT(table.OfferEducations.AllColumns).RETURNING(table.OfferEducations.AllColumns)
+
+	for _, v := range data {
+		stmt = stmt.MODEL(v).RETURNING(table.OfferEducations.AllColumns)
+	}
 	err := stmt.Query(r.db, &dest)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if len(dest) == 0 {
-		return nil, errors.New("error in create offer education")
+		return errors.New("error in create offer education")
 	}
-	return &dest[0], nil
+	return nil
 }
 
-func (r *OfferRepository) CreateOfferExperience(dto *offerDto.OfferExperienceDto) (*offer.OfferExperienceModel, error) {
-	data := r.adapter.CreateOfferExperienceAdapter(*dto)
-	stmt := table.OfferExperiences.INSERT(table.OfferExperiences.AllColumns).MODEL(data).RETURNING(table.OfferExperiences.AllColumns)
-	var dest []offer.OfferExperienceModel
+func (r *OfferRepository) CreateOfferExperience(dto offerDto.OfferExperienceDto) error {
+
+	data := r.adapter.CreateOfferExperienceAdapter(dto)
+	var dest []offer.OfferEducationModel
+	stmt := table.OfferExperiences.INSERT(table.OfferExperiences.AllColumns).RETURNING(table.OfferExperiences.AllColumns)
+
+	for _, v := range data {
+		stmt = stmt.MODEL(v).RETURNING(table.OfferExperiences.AllColumns)
+	}
 	err := stmt.Query(r.db, &dest)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if len(dest) == 0 {
-		return nil, errors.New("error in create offer experience")
+		return errors.New("error in create offer education")
 	}
-	return &dest[0], nil
+	return nil
 }
 
-func (r *OfferRepository) CreateOfferSkill() {}
+func (r *OfferRepository) CreateOfferSkill(dto offerDto.OfferSkillDto) error {
+
+	data := r.adapter.CreateOfferSkillAdapter(dto)
+	var dest []offer.OfferEducationModel
+	stmt := table.OfferSkills.INSERT(table.OfferSkills.AllColumns).RETURNING(table.OfferSkills.AllColumns)
+
+	for _, v := range data {
+		stmt = stmt.MODEL(v).RETURNING(table.OfferSkills.AllColumns)
+	}
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return err
+	}
+	if len(dest) == 0 {
+		return errors.New("error in create offer education")
+	}
+	return nil
+}

@@ -1,6 +1,8 @@
 package experienceAdapter
 
 import (
+	"time"
+
 	"github.com/f1k13/school-portal/internal/domain/models/experience"
 	experienceDto "github.com/f1k13/school-portal/internal/dto/experience"
 	"github.com/google/uuid"
@@ -13,11 +15,13 @@ func NewExperienceToModelAdapter() *ExperienceToModelAdapter {
 }
 
 func (a *ExperienceToModelAdapter) CreateExperienceAdapter(dto *experienceDto.ExperienceDto) experience.ExperienceModel {
+	createdAt := time.Now()
 	return experience.ExperienceModel{
-		ID:      uuid.New(),
-		Company: dto.Company,
-		UserID:  *dto.UserId,
-		Role:    dto.Role,
-		Years:   dto.Years,
+		ID:        uuid.New(),
+		Company:   dto.Company,
+		UserID:    *dto.UserId,
+		Role:      dto.Role,
+		Years:     dto.Years,
+		CreatedAt: &createdAt,
 	}
 }
