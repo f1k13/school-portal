@@ -13,7 +13,7 @@ func NewOfferToModelAdapter() *OfferToModelAdapter {
 }
 
 func (a *OfferToModelAdapter) CreateOfferAdapter(dto offerDto.OfferDto) offer.OfferModel {
-	return offer.OfferModel{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId}
+	return offer.OfferModel{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId, Title: dto.Title, Description: dto.Description, IsOnline: dto.IsOnline}
 }
 
 func (a *OfferToModelAdapter) CreateOfferEducationAdapter(dto offerDto.OfferEducationDto) []offer.OfferEducationModel {

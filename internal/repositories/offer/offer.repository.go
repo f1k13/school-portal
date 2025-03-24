@@ -51,6 +51,47 @@ func (r *OfferRepository) GetOfferById(id uuid.UUID) (*offer.Offer, error) {
 	return &dest, nil
 }
 
+func (r *OfferRepository) GetOfferByIdWithEducationExperienceSkills(id uuid.UUID) (*offer.OfferWithExpEdSkill, error) {
+	stmt := table.Offers.
+		SELECT(
+			table.Offers.AllColumns,
+			table.OfferEducations.AllColumns,
+			table.OfferExperiences.AllColumns,
+			table.Educations.AllColumns,
+			table.Experiences.AllColumns,
+			table.Skills.AllColumns,
+			table.Direction.AllColumns,
+		).
+		FROM(
+			table.Offers.
+				LEFT_JOIN(table.OfferEducations, table.OfferEducations.OfferID.EQ(table.Offers.ID)).
+				LEFT_JOIN(table.Educations, table.Educations.ID.EQ(table.OfferEducations.EducationID)).
+				LEFT_JOIN(table.OfferExperiences, table.OfferExperiences.OfferID.EQ(table.Offers.ID)).
+				LEFT_JOIN(table.Experiences, table.Experiences.ID.EQ(table.OfferExperiences.ExperienceID)).
+				LEFT_JOIN(table.OfferSkills, table.OfferSkills.OfferID.EQ(table.Offers.ID)).
+				LEFT_JOIN(table.Skills, table.Skills.ID.EQ(table.OfferSkills.SkillID)).
+				LEFT_JOIN(table.Direction, table.Direction.ID.EQ(table.Offers.DirectionID)),
+		).
+		WHERE(table.Offers.ID.EQ(postgres.UUID(id)))
+
+	var dest []offer.OfferWithExpEdSkill
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("offer not found")
+		}
+		return nil, err
+	}
+
+	// Если мы получили данные, то возвращаем первую запись
+	if len(dest) > 0 {
+		offer := &dest[0]
+		return offer, nil
+	}
+
+	return nil, errors.New("offer not found")
+}
+
 func (r *OfferRepository) CreateOfferEducation(dto offerDto.OfferEducationDto) error {
 
 	data := r.adapter.CreateOfferEducationAdapter(dto)

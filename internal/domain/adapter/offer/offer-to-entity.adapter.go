@@ -9,5 +9,5 @@ func NewOfferToEntityAdapter() *OfferToEntityAdapter {
 }
 
 func (a *OfferToEntityAdapter) OfferAdapter(o *offer.OfferModel) *offer.Offer {
-	return &offer.Offer{ID: o.ID, Price: o.Price, DirectionID: o.DirectionID, UserID: o.UserID}
+	return &offer.Offer{ID: o.ID, Price: o.Price, DirectionID: o.DirectionID, UserID: o.UserID, Title: o.Title, Description: o.Description, IsOnline: o.IsOnline}
 }

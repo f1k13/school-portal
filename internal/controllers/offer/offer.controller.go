@@ -49,7 +49,24 @@ func (c *OfferController) CreateOffer(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (c *OfferController) GetOfferById(w http.ResponseWriter, r *http.Request) {}
+func (c *OfferController) GetOfferById(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	req := query.Get("id")
+	if req == "" {
+		res := controllers.Response{Message: "id is empty"}
+		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
+		return
+	}
+	o, err := c.offerService.GetOfferById(req)
+	if err != nil {
+		logger.Log.Error("error in get offer by id handler", err)
+		res := controllers.Response{Message: err.Error()}
+		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
+		return
+	}
+	res := offer.OfferWithExpEdSkillRes{Response: controllers.Response{Message: "Успешно"}, Offer: *o}
+	c.controllers.ResponseJson(w, http.StatusOK, res)
+}
 
 func (ch *OfferController) CreateEducation(w http.ResponseWriter, r *http.Request) {}
 
