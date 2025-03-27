@@ -96,7 +96,7 @@ func (s *OfferService) CreateExperienceOffer() {}
 func (s *OfferService) CreateSkillOffer() {}
 
 func (s *OfferService) GetOfferById(id string) (*offer.OfferWithExpEdSkill, error) {
-	o, err := s.offerRepo.GetOfferByIdWithEducationExperienceSkills(uuid.MustParse(id))
+	o, err := s.offerRepo.GetOfferByIdWithEducationExperienceSkills(id)
 	if err != nil {
 		logger.Log.Error("error in get offer by id", err)
 		return nil, err

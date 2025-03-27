@@ -1,12 +1,10 @@
 package offer
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/f1k13/school-portal/internal/controllers"
-	"github.com/f1k13/school-portal/internal/domain/models/education"
-	"github.com/f1k13/school-portal/internal/domain/models/experience"
-	"github.com/f1k13/school-portal/internal/domain/models/skill"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/google/uuid"
 )
@@ -20,20 +18,20 @@ type OfferEducationModel = model.OfferEducations
 type OfferSkillModel = model.OfferSkills
 
 type OfferWithExpEdSkill struct {
-	OfferModel
-	Experiences []experience.Experience `json:"experiences"`
-	Educations  []education.Education   `json:"educations"`
-	Skills      []skill.SkillModel      `json:"skills"`
+	Offer
+	Experiences json.RawMessage `json:"experiences"`
+	Educations  json.RawMessage `json:"educations"`
+	Skills      json.RawMessage `json:"skills"`
 }
 type Offer struct {
-	ID          uuid.UUID `json:"id"`
-	Price       int32     `json:"price"`
-	UserID      uuid.UUID `json:"userId"`
-	DirectionID uuid.UUID `json:"directionId"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	IsOnline    bool      `json:"isOnline"`
-	CreatedAt   time.Time `json:"createdAt"`
+	ID          uuid.UUID `json:"id" db:"id"`
+	Price       int32     `json:"price" db:"price"`
+	UserID      uuid.UUID `json:"userId" db:"user_id"`
+	DirectionID uuid.UUID `json:"directionId" db:"direction_id"`
+	Title       string    `json:"title" db:"title"`
+	Description string    `json:"description" db:"description"`
+	IsOnline    bool      `json:"isOnline" db:"is_online"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
 }
 
 type OfferRes struct {
