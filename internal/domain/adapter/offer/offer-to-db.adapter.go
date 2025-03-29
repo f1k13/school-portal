@@ -1,6 +1,8 @@
 package offerAdapter
 
 import (
+	"time"
+
 	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/google/uuid"
@@ -13,7 +15,8 @@ func NewOfferToModelAdapter() *OfferToModelAdapter {
 }
 
 func (a *OfferToModelAdapter) CreateOfferAdapter(dto offerDto.OfferDto) offer.OfferModel {
-	return offer.OfferModel{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId, Title: dto.Title, Description: dto.Description, IsOnline: dto.IsOnline}
+	createdAt := time.Now()
+	return offer.OfferModel{ID: uuid.New(), Price: dto.Price, DirectionID: *dto.DirectionId, UserID: *dto.UserId, Title: dto.Title, Description: dto.Description, IsOnline: dto.IsOnline, CreatedAt: &createdAt}
 }
 
 func (a *OfferToModelAdapter) CreateOfferEducationAdapter(dto offerDto.OfferEducationDto) []offer.OfferEducationModel {
@@ -50,4 +53,17 @@ func (a *OfferToModelAdapter) CreateOfferSkillAdapter(dto offerDto.OfferSkillDto
 		})
 	}
 	return models
+}
+
+func (a *OfferToModelAdapter) OfferWithExpEduSkillAdapter(o *offer.OfferWithExpEdSkillRaw) offer.Offer {
+	return offer.Offer{
+		ID:          o.ID,
+		Price:       o.Price,
+		UserID:      o.UserID,
+		DirectionID: o.DirectionID,
+		Title:       o.Title,
+		Description: o.Description,
+		IsOnline:    o.IsOnline,
+		CreatedAt:   o.CreatedAt,
+	}
 }

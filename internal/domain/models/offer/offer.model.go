@@ -42,3 +42,10 @@ type OfferWithExpEdSkillRes struct {
 	controllers.Response `json:"response"`
 	Offer                OfferWithExpEdSkill `json:"offer"`
 }
+
+type OfferWithExpEdSkillRaw struct {
+	Offer
+	Experiences []byte `db:"experiences"`
+	Educations  []byte `db:"educations"`
+	Skills      []byte `db:"skills"`
+}

@@ -81,7 +81,7 @@ func StartApp() {
 	experienceToEntityAdapter := experienceAdapter.NewExperienceToEntityAdapter()
 	offerToEntityAdapter := offerAdapter.NewOfferToEntityAdapter()
 	educationToEntityAdapter := educationAdapter.NewEducationToEntityAdapter()
-
+	userToEntityAdapter := userAdapter.NewUserToEntityAdapter()
 	educationToModelDataMapper := educationDataMapper.NewEducationDataMapper(educationToModelAdapter)
 	experienceToModelDataMapper := experienceMapper.NewExperienceToModelMapper(experienceToModelAdapter)
 
@@ -102,7 +102,7 @@ func StartApp() {
 	experienceService := experienceService.NewExperienceService(experienceRepo)
 
 	authController := authController.NewAuthController(authService)
-	userController := userController.NewUserController(userService)
+	userController := userController.NewUserController(userService, userToEntityAdapter)
 	offerController := offerController.NewOfferController(offerService, offerToEntityAdapter)
 	educationController := educationController.NewEducationController(educationService, educationToEntityDataMapper)
 	experienceController := experienceController.NewExperienceController(experienceService, experienceToEntityDataMapper)

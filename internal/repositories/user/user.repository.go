@@ -172,10 +172,10 @@ func (r *UserRepository) CreateProfile(dto *userDto.UserProfileDto) (*user.Profi
 
 	return &dest[0], nil
 }
-func (r *UserRepository) GetProfileWithUser(userID uuid.UUID) (*user.UserProfile, error) {
+func (r *UserRepository) GetProfileWithUser(userID uuid.UUID) (*user.UserProfileModel, error) {
 	stmt := table.Profiles.SELECT(table.Profiles.AllColumns, table.Users.AllColumns).FROM(table.Profiles.LEFT_JOIN(table.Users, table.Users.ID.EQ(table.Profiles.UserID))).WHERE(table.Profiles.UserID.EQ(postgres.UUID(userID)))
 
-	var dest user.UserProfile
+	var dest user.UserProfileModel
 	err := stmt.Query(r.DB, &dest)
 	if err != nil {
 		if err.Error() == "qrm: no rows in result set" {

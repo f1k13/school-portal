@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/f1k13/school-portal/internal/controllers"
+	userAdapter "github.com/f1k13/school-portal/internal/domain/adapter/user"
 	"github.com/f1k13/school-portal/internal/domain/models/user"
 	userDto "github.com/f1k13/school-portal/internal/dto/user"
 	"github.com/f1k13/school-portal/internal/logger"
@@ -14,12 +15,14 @@ import (
 type UserController struct {
 	UserService *userService.UserService
 	controllers *controllers.Controller
+	adapter     *userAdapter.UserToEntityAdapter
 }
 
-func NewUserController(userService *userService.UserService) *UserController {
+func NewUserController(userService *userService.UserService, adapter *userAdapter.UserToEntityAdapter) *UserController {
 	return &UserController{
 		UserService: userService,
 		controllers: &controllers.Controller{},
+		adapter:     adapter,
 	}
 }
 
@@ -32,7 +35,8 @@ func (c *UserController) GetSelf(w http.ResponseWriter, r *http.Request) {
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	res := user.UserSelfRes{User: u, Response: controllers.Response{Message: "Успешно"}}
+	userAdapter := c.adapter.UserAdapter(u)
+	res := user.UserSelfRes{User: *userAdapter, Response: controllers.Response{Message: "Успешно"}}
 	c.controllers.ResponseJson(w, http.StatusOK, res)
 }
 func (c *UserController) ProfilePost(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +56,8 @@ func (c *UserController) ProfilePost(w http.ResponseWriter, r *http.Request) {
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	c.controllers.ResponseJson(w, http.StatusCreated, res)
+	profile := c.adapter.ProfileAdapter(res)
+	c.controllers.ResponseJson(w, http.StatusCreated, profile)
 }
 
 func (c *UserController) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -65,12 +70,12 @@ func (c *UserController) GetProfile(w http.ResponseWriter, r *http.Request) {
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-
+	result := c.adapter.UserProfileAdapter(&profile.User, &profile.Profile)
 	res := user.UserProfileRes{
 		Response: controllers.Response{Message: "Успешно"},
 		UserProfile: user.UserProfile{
-			User:    profile.User,
-			Profile: profile.Profile,
+			User:    result.User,
+			Profile: result.Profile,
 		},
 	}
 

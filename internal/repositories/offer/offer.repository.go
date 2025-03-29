@@ -11,8 +11,6 @@ import (
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
-	"github.com/go-jet/jet/v2/postgres"
-	jet "github.com/go-jet/jet/v2/postgres"
 	"github.com/google/uuid"
 )
 
@@ -41,101 +39,108 @@ func (r *OfferRepository) CreateOffer(dto offerDto.OfferDto) (*offer.OfferModel,
 	return &dest[0], nil
 }
 
-func (r *OfferRepository) GetOfferById(id uuid.UUID) (*offer.Offer, error) {
-	stmt := table.Offers.SELECT(table.Offers.AllColumns).FROM(table.Offers).WHERE(table.Offers.ID.EQ(postgres.UUID(id)))
-	var dest offer.Offer
-	err := stmt.Query(r.db, &dest)
+func (r *OfferRepository) GetOfferById(id string) (*offer.Offer, error) {
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid UUID format")
+	}
+	var offer offer.Offer
+	err = r.db.QueryRow("SELECT id, price, user_id, direction_id, title, description, is_online, created_at FROM public.offers WHERE id = $1", parsedID).
+		Scan(&offer.ID, &offer.Price, &offer.UserID, &offer.DirectionID, &offer.Title, &offer.Description, &offer.IsOnline, &offer.CreatedAt)
 	if err != nil {
 		if err.Error() == "qrm: no rows in result set" {
 			return nil, errors.New("offer not found")
 		}
 		return nil, err
 	}
-	return &dest, nil
+	return &offer, nil
 }
+
 func (r *OfferRepository) GetOfferByIdWithEducationExperienceSkills(id string) (*offer.OfferWithExpEdSkill, error) {
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid UUID format")
 	}
 
-	var offerExists bool
-	err = table.Offers.
-		SELECT(jet.BoolExp(jet.Raw("1"))).
-		WHERE(table.Offers.ID.EQ(postgres.UUID(parsedID))).
-		Query(r.db, &offerExists)
+	var rawData offer.OfferWithExpEdSkillRaw
+	query := `
+		SELECT
+			offers.id,
+			offers.price,
+			offers.user_id,
+			offers.direction_id,
+			offers.title,
+			offers.description,
+			offers.is_online,
+			offers.created_at,
+			COALESCE(
+				json_agg(
+					DISTINCT jsonb_build_object(
+						'id', educations.id,
+						'institution', educations.institution,
+						'degree', educations.degree,
+						'start_year', educations.start_year,
+						'end_year', educations.end_year,
+						'city', educations.city
+					)
+				) FILTER (WHERE educations.id IS NOT NULL), '[]'
+			) AS educations,
+			COALESCE(
+				json_agg(
+					DISTINCT jsonb_build_object(
+						'id', experiences.id,
+						'company', experiences.company,
+						'role', experiences.role,
+						'years', experiences.years
+					)
+				) FILTER (WHERE experiences.id IS NOT NULL), '[]'
+			) AS experiences,
+			COALESCE(
+				json_agg(
+					DISTINCT jsonb_build_object(
+						'id', skills.id,
+						'name', skills.name,
+						'image', skills.image
+					)
+				) FILTER (WHERE skills.id IS NOT NULL), '[]'
+			) AS skills
+		FROM public.offers
+		LEFT JOIN public.offer_educations AS offer_educations ON offer_educations.offer_id = offers.id
+		LEFT JOIN public.educations AS educations ON educations.id = offer_educations.education_id
+		LEFT JOIN public.offer_experiences AS offer_experiences ON offer_experiences.offer_id = offers.id
+		LEFT JOIN public.experiences AS experiences ON experiences.id = offer_experiences.experience_id
+		LEFT JOIN public.offer_skills AS offer_skills ON offer_skills.offer_id = offers.id
+		LEFT JOIN public.skills AS skills ON skills.id = offer_skills.skill_id
+		WHERE offers.id = $1
+		GROUP BY
+			offers.id,
+			offers.price,
+			offers.user_id,
+			offers.direction_id,
+			offers.title,
+			offers.description,
+			offers.is_online,
+			offers.created_at
+	`
 
-	if err != nil {
-		return nil, fmt.Errorf("offer existence check failed: %v", err)
-	}
-	if !offerExists {
-		return nil, errors.New("offer not found")
-	}
-
-	stmt := table.Offers.
-		SELECT(
-			table.Offers.AllColumns,
-			jet.Raw(`COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', educations.id,
-                        'institution', educations.institution,
-                        'degree', educations.degree,
-                        'start_year', educations.start_year,
-                        'end_year', educations.end_year,
-                        'city', educations.city
-                    )
-                ) FILTER (WHERE educations.id IS NOT NULL), '[]'
-            )::jsonb`).AS("educations"),
-			jet.Raw(`COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', experiences.id,
-                        'company', experiences.company,
-                        'role', experiences.role,
-                        'years', experiences.years
-                    )
-                ) FILTER (WHERE experiences.id IS NOT NULL), '[]'
-            )::jsonb`).AS("experiences"),
-			jet.Raw(`COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', skills.id,
-                        'name', skills.name,
-                        'image', skills.image
-                    )
-                ) FILTER (WHERE skills.id IS NOT NULL), '[]'
-            )::jsonb`).AS("skills"),
-		).
-		FROM(
-			table.Offers.
-				LEFT_JOIN(table.OfferEducations, table.OfferEducations.OfferID.EQ(table.Offers.ID)).
-				LEFT_JOIN(table.Educations, table.Educations.ID.EQ(table.OfferEducations.EducationID)).
-				LEFT_JOIN(table.OfferExperiences, table.OfferExperiences.OfferID.EQ(table.Offers.ID)).
-				LEFT_JOIN(table.Experiences, table.Experiences.ID.EQ(table.OfferExperiences.ExperienceID)).
-				LEFT_JOIN(table.OfferSkills, table.OfferSkills.OfferID.EQ(table.Offers.ID)).
-				LEFT_JOIN(table.Skills, table.Skills.ID.EQ(table.OfferSkills.SkillID)),
-		).
-		WHERE(table.Offers.ID.EQ(postgres.UUID(parsedID))).
-		GROUP_BY(table.Offers.ID)
-
-	var rawData struct {
-		offer.Offer
-		Experiences []byte `db:"experiences"`
-		Educations  []byte `db:"educations"`
-		Skills      []byte `db:"skills"`
-	}
-
-	if err := stmt.Query(r.db, &rawData); err != nil {
+	if err := r.db.QueryRow(query, parsedID).Scan(
+		&rawData.ID,
+		&rawData.Price,
+		&rawData.UserID,
+		&rawData.DirectionID,
+		&rawData.Title,
+		&rawData.Description,
+		&rawData.IsOnline,
+		&rawData.CreatedAt,
+		&rawData.Experiences,
+		&rawData.Educations,
+		&rawData.Skills,
+	); err != nil {
 		return nil, fmt.Errorf("query failed: %v", err)
 	}
 
-	if rawData.Offer.ID == uuid.Nil {
-		return nil, errors.New("offer data not found (zero UUID)")
-	}
-
 	var result offer.OfferWithExpEdSkill
-	result.Offer = rawData.Offer
+	result.Offer = r.adapter.OfferWithExpEduSkillAdapter(&rawData)
 
 	if err := json.Unmarshal(rawData.Experiences, &result.Experiences); err != nil {
 		return nil, fmt.Errorf("failed to parse experiences: %v", err)
@@ -149,6 +154,7 @@ func (r *OfferRepository) GetOfferByIdWithEducationExperienceSkills(id string) (
 
 	return &result, nil
 }
+
 func (r *OfferRepository) CreateOfferEducation(dto offerDto.OfferEducationDto) error {
 
 	data := r.adapter.CreateOfferEducationAdapter(dto)

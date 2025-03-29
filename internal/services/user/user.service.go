@@ -46,7 +46,7 @@ func (s *UserService) CreateProfile(dto *userDto.UserProfileDto, userID string) 
 
 	return p, nil
 }
-func (s *UserService) GetProfile(userID string) (*user.UserProfile, error) {
+func (s *UserService) GetProfile(userID string) (*user.UserProfileModel, error) {
 	uuid, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, errors.New("invalid UUID format")
