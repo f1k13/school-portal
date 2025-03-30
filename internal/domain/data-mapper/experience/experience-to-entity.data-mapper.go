@@ -15,10 +15,10 @@ func NewExperienceToEntityMapper(adapter *experienceAdapter.ExperienceToEntityAd
 	}
 }
 
-func (d *ExperienceToEntityMapper) ExperienceMapper(e []experience.ExperienceModel) []experience.Experience {
+func (d *ExperienceToEntityMapper) ExperienceMapper(e *[]experience.ExperienceModel) []experience.Experience {
 	var models []experience.Experience
 
-	for _, model := range e {
+	for _, model := range *e {
 		models = append(models, d.adapter.ExperienceAdapter(model))
 	}
 	return models

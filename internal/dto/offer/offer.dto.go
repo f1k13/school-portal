@@ -28,3 +28,15 @@ type OfferSkillDto struct {
 	SkillIDS *[]uuid.UUID `json:"skillIds"`
 	OfferId  *uuid.UUID   `json:"offerId"`
 }
+
+type SearchOfferDto struct {
+	Query         string       `json:"query"`
+	Page          int32        `json:"page"`
+	Limit         int32        `json:"limit"`
+	DirectionId   *uuid.UUID   `json:"directionId"`
+	ExperienceIds *[]uuid.UUID `json:"experienceIds"`
+	SkillIds      *[]uuid.UUID `json:"skillIds"`
+	EducationIds  *[]uuid.UUID `json:"educationIds"`
+	IsOnline      *bool        `json:"isOnline"`
+	Price         *int32       `json:"price"`
+}

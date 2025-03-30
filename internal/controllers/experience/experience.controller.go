@@ -2,9 +2,10 @@ package experienceController
 
 import (
 	"encoding/json"
+	"net/http"
+
 	experienceMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/experience"
 	"github.com/f1k13/school-portal/internal/domain/models/experience"
-	"net/http"
 
 	"github.com/f1k13/school-portal/internal/controllers"
 	experienceDto "github.com/f1k13/school-portal/internal/dto/experience"
@@ -37,7 +38,7 @@ func (c *ExperienceController) CreateExperience(w http.ResponseWriter, r *http.R
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	eMapper := c.mapper.ExperienceMapper(*e)
+	eMapper := c.mapper.ExperienceMapper(e)
 	res := experience.ExperienceRes{Experience: eMapper, Response: controllers.Response{Message: "Успешно"}}
 	c.controllers.ResponseJson(w, http.StatusCreated, res)
 }

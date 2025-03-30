@@ -54,16 +54,3 @@ func (a *OfferToModelAdapter) CreateOfferSkillAdapter(dto offerDto.OfferSkillDto
 	}
 	return models
 }
-
-func (a *OfferToModelAdapter) OfferWithExpEduSkillAdapter(o *offer.OfferWithExpEdSkillRaw) offer.Offer {
-	return offer.Offer{
-		ID:          o.ID,
-		Price:       o.Price,
-		UserID:      o.UserID,
-		DirectionID: o.DirectionID,
-		Title:       o.Title,
-		Description: o.Description,
-		IsOnline:    o.IsOnline,
-		CreatedAt:   o.CreatedAt,
-	}
-}

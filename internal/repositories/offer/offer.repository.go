@@ -2,15 +2,14 @@ package offerRepo
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"fmt"
 
 	offerAdapter "github.com/f1k13/school-portal/internal/domain/adapter/offer"
 	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
+	"github.com/go-jet/jet/v2/postgres"
 	"github.com/google/uuid"
 )
 
@@ -39,120 +38,17 @@ func (r *OfferRepository) CreateOffer(dto offerDto.OfferDto) (*offer.OfferModel,
 	return &dest[0], nil
 }
 
-func (r *OfferRepository) GetOfferById(id string) (*offer.Offer, error) {
-	parsedID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, errors.New("invalid UUID format")
-	}
-	var offer offer.Offer
-	err = r.db.QueryRow("SELECT id, price, user_id, direction_id, title, description, is_online, created_at FROM public.offers WHERE id = $1", parsedID).
-		Scan(&offer.ID, &offer.Price, &offer.UserID, &offer.DirectionID, &offer.Title, &offer.Description, &offer.IsOnline, &offer.CreatedAt)
+func (r *OfferRepository) GetOfferById(id uuid.UUID) (*offer.OfferModel, error) {
+	stmt := table.Offers.SELECT(table.Offers.AllColumns).FROM(table.Offers).WHERE(table.Offers.ID.EQ(postgres.UUID(id)))
+	var dest offer.OfferModel
+	err := stmt.Query(r.db, &dest)
 	if err != nil {
 		if err.Error() == "qrm: no rows in result set" {
 			return nil, errors.New("offer not found")
 		}
 		return nil, err
 	}
-	return &offer, nil
-}
-
-func (r *OfferRepository) GetOfferByIdWithEducationExperienceSkills(id string) (*offer.OfferWithExpEdSkill, error) {
-	parsedID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, errors.New("invalid UUID format")
-	}
-
-	var rawData offer.OfferWithExpEdSkillRaw
-	query := `
-		SELECT
-			offers.id,
-			offers.price,
-			offers.user_id,
-			offers.direction_id,
-			offers.title,
-			offers.description,
-			offers.is_online,
-			offers.created_at,
-			COALESCE(
-				json_agg(
-					DISTINCT jsonb_build_object(
-						'id', educations.id,
-						'institution', educations.institution,
-						'degree', educations.degree,
-						'start_year', educations.start_year,
-						'end_year', educations.end_year,
-						'city', educations.city
-					)
-				) FILTER (WHERE educations.id IS NOT NULL), '[]'
-			) AS educations,
-			COALESCE(
-				json_agg(
-					DISTINCT jsonb_build_object(
-						'id', experiences.id,
-						'company', experiences.company,
-						'role', experiences.role,
-						'years', experiences.years
-					)
-				) FILTER (WHERE experiences.id IS NOT NULL), '[]'
-			) AS experiences,
-			COALESCE(
-				json_agg(
-					DISTINCT jsonb_build_object(
-						'id', skills.id,
-						'name', skills.name,
-						'image', skills.image
-					)
-				) FILTER (WHERE skills.id IS NOT NULL), '[]'
-			) AS skills
-		FROM public.offers
-		LEFT JOIN public.offer_educations AS offer_educations ON offer_educations.offer_id = offers.id
-		LEFT JOIN public.educations AS educations ON educations.id = offer_educations.education_id
-		LEFT JOIN public.offer_experiences AS offer_experiences ON offer_experiences.offer_id = offers.id
-		LEFT JOIN public.experiences AS experiences ON experiences.id = offer_experiences.experience_id
-		LEFT JOIN public.offer_skills AS offer_skills ON offer_skills.offer_id = offers.id
-		LEFT JOIN public.skills AS skills ON skills.id = offer_skills.skill_id
-		WHERE offers.id = $1
-		GROUP BY
-			offers.id,
-			offers.price,
-			offers.user_id,
-			offers.direction_id,
-			offers.title,
-			offers.description,
-			offers.is_online,
-			offers.created_at
-	`
-
-	if err := r.db.QueryRow(query, parsedID).Scan(
-		&rawData.ID,
-		&rawData.Price,
-		&rawData.UserID,
-		&rawData.DirectionID,
-		&rawData.Title,
-		&rawData.Description,
-		&rawData.IsOnline,
-		&rawData.CreatedAt,
-		&rawData.Experiences,
-		&rawData.Educations,
-		&rawData.Skills,
-	); err != nil {
-		return nil, fmt.Errorf("query failed: %v", err)
-	}
-
-	var result offer.OfferWithExpEdSkill
-	result.Offer = r.adapter.OfferWithExpEduSkillAdapter(&rawData)
-
-	if err := json.Unmarshal(rawData.Experiences, &result.Experiences); err != nil {
-		return nil, fmt.Errorf("failed to parse experiences: %v", err)
-	}
-	if err := json.Unmarshal(rawData.Educations, &result.Educations); err != nil {
-		return nil, fmt.Errorf("failed to parse educations: %v", err)
-	}
-	if err := json.Unmarshal(rawData.Skills, &result.Skills); err != nil {
-		return nil, fmt.Errorf("failed to parse skills: %v", err)
-	}
-
-	return &result, nil
+	return &dest, nil
 }
 
 func (r *OfferRepository) CreateOfferEducation(dto offerDto.OfferEducationDto) error {
@@ -210,4 +106,48 @@ func (r *OfferRepository) CreateOfferSkill(dto offerDto.OfferSkillDto) error {
 		return errors.New("error in create offer education")
 	}
 	return nil
+}
+
+func (r *OfferRepository) GetOfferExperience(offerID uuid.UUID) (*[]offer.OfferExperienceModel, error) {
+	stmt := table.OfferExperiences.SELECT(table.OfferExperiences.AllColumns).FROM(table.OfferExperiences).WHERE(table.OfferExperiences.OfferID.EQ(postgres.UUID(offerID)))
+
+	var dest []offer.OfferExperienceModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	if len(dest) == 0 {
+		return nil, errors.New("error in get offer experience")
+	}
+	return &dest, nil
+}
+
+func (r *OfferRepository) GetOfferEducation(offerID uuid.UUID) (*[]offer.OfferEducationModel, error) {
+	stmt := table.OfferEducations.SELECT(table.OfferEducations.AllColumns).FROM(table.OfferEducations).WHERE(table.OfferEducations.OfferID.EQ(postgres.UUID(offerID)))
+
+	var dest []offer.OfferEducationModel
+
+	err := stmt.Query(r.db, &dest)
+
+	if err != nil {
+		return nil, err
+	}
+	return &dest, nil
+}
+
+func (r *OfferRepository) GetOfferSkill(offerID uuid.UUID) (*[]offer.OfferSkillModel, error) {
+	stmt := table.OfferSkills.SELECT(table.OfferSkills.AllColumns).FROM(table.OfferSkills).WHERE(table.OfferSkills.OfferID.EQ(postgres.UUID(offerID)))
+
+	var dest []offer.OfferSkillModel
+
+	err := stmt.Query(r.db, &dest)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(dest) == 0 {
+		return nil, errors.New("error in get offer skill")
+	}
+	return &dest, nil
 }

@@ -1,10 +1,11 @@
 package offer
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/f1k13/school-portal/internal/controllers"
+	"github.com/f1k13/school-portal/internal/domain/models/education"
+	"github.com/f1k13/school-portal/internal/domain/models/experience"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/model"
 	"github.com/google/uuid"
 )
@@ -19,9 +20,8 @@ type OfferSkillModel = model.OfferSkills
 
 type OfferWithExpEdSkill struct {
 	Offer
-	Experiences json.RawMessage `json:"experiences"`
-	Educations  json.RawMessage `json:"educations"`
-	Skills      json.RawMessage `json:"skills"`
+	Experiences []experience.Experience `json:"experiences"`
+	Educations  []education.Education   `json:"educations"`
 }
 type Offer struct {
 	ID          uuid.UUID `json:"id" db:"id"`
@@ -42,10 +42,13 @@ type OfferWithExpEdSkillRes struct {
 	controllers.Response `json:"response"`
 	Offer                OfferWithExpEdSkill `json:"offer"`
 }
+type OfferSearchWithExpEdSkillRes struct {
+	controllers.Response `json:"response"`
+	Offer                []OfferWithExpEdSkill `json:"offer"`
+}
 
-type OfferWithExpEdSkillRaw struct {
-	Offer
-	Experiences []byte `db:"experiences"`
-	Educations  []byte `db:"educations"`
-	Skills      []byte `db:"skills"`
+type OfferWithExpEduModel struct {
+	OfferModel
+	Experience []experience.ExperienceModel
+	Education  []education.EducationModel
 }

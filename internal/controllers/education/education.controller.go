@@ -43,7 +43,7 @@ func (c *EducationController) CreateEducation(w http.ResponseWriter, r *http.Req
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	eMapper := c.mapper.EducationAdapter(&e)
+	eMapper := c.mapper.EducationMapper(&e)
 	res := education.EducationRes{Education: *eMapper, Response: controllers.Response{Message: "Успешно"}}
 	c.controllers.ResponseJson(w, http.StatusCreated, res)
 }

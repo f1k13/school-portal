@@ -23,4 +23,5 @@ func NewOfferRouter(r *chi.Mux, offerController *offerController.OfferController
 func (r *OfferRoute) OfferRouter() {
 	r.router.With(r.authMiddleware.Auth).Post("/offer/post", r.offerController.CreateOffer)
 	r.router.With(r.authMiddleware.Auth).Get("/offer/get", r.offerController.GetOfferById)
+	r.router.Post("/offer/search", r.offerController.SearchOffers)
 }

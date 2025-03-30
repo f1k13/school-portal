@@ -8,6 +8,8 @@ import (
 	"github.com/f1k13/school-portal/internal/domain/models/education"
 	educationDto "github.com/f1k13/school-portal/internal/dto/education"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
+	"github.com/go-jet/jet/v2/postgres"
+	"github.com/google/uuid"
 )
 
 type EducationRepository struct {
@@ -36,4 +38,44 @@ func (r *EducationRepository) CreateEducation(dto *[]educationDto.EducationDto) 
 	}
 
 	return dest, nil
+}
+
+func (r *EducationRepository) GetEducationById(id uuid.UUID) (*education.EducationModel, error) {
+	stmt := table.Educations.SELECT(table.Educations.AllColumns).FROM(table.Educations).WHERE(table.Educations.ID.EQ(postgres.UUID(id)))
+	var dest education.EducationModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		if err.Error() == "qrm: no rows in result set" {
+			return nil, errors.New("education not found")
+		}
+		return nil, err
+	}
+	return &dest, nil
+}
+
+func (r *EducationRepository) GetEducations() (*[]education.EducationModel, error) {
+	stmt := table.Educations.SELECT(table.Educations.AllColumns).FROM(table.Educations)
+	var dest []education.EducationModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	if len(dest) == 0 {
+		return nil, errors.New("error in get education")
+	}
+	return &dest, nil
+}
+
+func (r *EducationRepository) GetEducationsByIds(eduIDS []uuid.UUID) (*[]education.EducationModel, error) {
+	ids := r.mapper.EducationIds(eduIDS)
+	stmt := table.Educations.SELECT(table.Educations.AllColumns).FROM(table.Educations).WHERE(table.Educations.ID.IN(ids...))
+	var dest []education.EducationModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	if len(dest) == 0 {
+		return nil, errors.New("error in get education")
+	}
+	return &dest, nil
 }

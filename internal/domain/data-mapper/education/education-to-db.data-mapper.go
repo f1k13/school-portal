@@ -4,6 +4,8 @@ import (
 	educationAdapter "github.com/f1k13/school-portal/internal/domain/adapter/education"
 	"github.com/f1k13/school-portal/internal/domain/models/education"
 	educationDto "github.com/f1k13/school-portal/internal/dto/education"
+	jet "github.com/go-jet/jet/v2/postgres"
+	"github.com/google/uuid"
 )
 
 type EducationDataMapper struct {
@@ -22,4 +24,12 @@ func (d *EducationDataMapper) CreateEducationMapperToModel(dto []educationDto.Ed
 		models = append(models, *d.adapter.CreateEducationAdapter(&dto))
 	}
 	return models
+}
+func (d *EducationDataMapper) EducationIds(ids []uuid.UUID) []jet.Expression {
+	var eduIDExprs []jet.Expression
+
+	for _, id := range ids {
+		eduIDExprs = append(eduIDExprs, jet.UUID(id))
+	}
+	return eduIDExprs
 }

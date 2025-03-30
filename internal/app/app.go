@@ -97,13 +97,13 @@ func StartApp() {
 
 	authService := authService.NewAuthService(userRepo, emailService)
 	userService := userService.NewUserService(userRepo)
-	offerService := offerService.NewOfferService(offerRepo)
+	offerService := offerService.NewOfferService(offerRepo, experienceRepo, educationRepo)
 	educationService := educationService.NewEducationService(educationRepo)
 	experienceService := experienceService.NewExperienceService(experienceRepo)
 
 	authController := authController.NewAuthController(authService)
 	userController := userController.NewUserController(userService, userToEntityAdapter)
-	offerController := offerController.NewOfferController(offerService, offerToEntityAdapter)
+	offerController := offerController.NewOfferController(offerService, offerToEntityAdapter, experienceToEntityDataMapper, educationToEntityDataMapper)
 	educationController := educationController.NewEducationController(educationService, educationToEntityDataMapper)
 	experienceController := experienceController.NewExperienceController(experienceService, experienceToEntityDataMapper)
 
