@@ -2,6 +2,7 @@ package offerService
 
 import (
 	"errors"
+	"slices"
 	"sync"
 
 	"github.com/f1k13/school-portal/internal/domain/models/education"
@@ -97,27 +98,96 @@ func (s *OfferService) CreateOffer(dto offerDto.OfferDto, userID string) (*offer
 	return o, nil
 }
 
-func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) ([]offer.OfferWithExpEdSkill, error) {
-	// o, err := s.offerRepo.GetOfferWithFilters(dto)
-	// if err != nil {
-	// 	logger.Log.Error("error in search offers", err)
-	// 	return nil, err
-	// }
-	// return o, nil
-	return nil, nil
+func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) (*[]offer.OfferWithExpEduModel, error) {
+	o, err := s.offerRepo.GetOffersWithFilters(dto)
+	if err != nil {
+		logger.Log.Error("error in search offers", err)
+		return nil, err
+	}
+	if len(*o) == 0 {
+		return &[]offer.OfferWithExpEduModel{}, nil
+	}
+
+	offerIds := make([]uuid.UUID, len(*o))
+	for i, v := range *o {
+		offerIds[i] = v.ID
+	}
+
+	offerExp, err := s.offerRepo.GetOffersExperience(offerIds)
+	if err != nil {
+		return nil, err
+	}
+
+	offerEdu, err := s.offerRepo.GetOffersEducation(offerIds)
+	if err != nil {
+		return nil, err
+	}
+
+	expMap := make(map[uuid.UUID][]experience.ExperienceModel)
+	eduMap := make(map[uuid.UUID][]education.EducationModel)
+
+	if len(*offerExp) > 0 {
+		expIDS := make([]uuid.UUID, len(*offerExp))
+		for i, v := range *offerExp {
+			expIDS[i] = v.ExperienceID
+		}
+
+		experiences, err := s.expRepo.GetExperiencesByIds(expIDS)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, exp := range *experiences {
+			for _, offerExp := range *offerExp {
+				if offerExp.ExperienceID == exp.ID {
+					expMap[offerExp.OfferID] = append(expMap[offerExp.OfferID], exp)
+				}
+			}
+		}
+	}
+
+	if len(*offerEdu) > 0 {
+		eduIds := make([]uuid.UUID, len(*offerEdu))
+		for i, v := range *offerEdu {
+			eduIds[i] = v.EducationID
+		}
+
+		educations, err := s.eduRepo.GetEducationsByIds(eduIds)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, edu := range *educations {
+			for _, offerEdu := range *offerEdu {
+				if offerEdu.EducationID == edu.ID {
+					eduMap[offerEdu.OfferID] = append(eduMap[offerEdu.OfferID], edu)
+				}
+			}
+		}
+	}
+	offerModels := make([]offer.OfferWithExpEduModel, len(*o))
+	for i, v := range *o {
+		offerModels[i] = offer.OfferWithExpEduModel{
+			OfferModel: v,
+			Experience: expMap[v.ID],
+			Education:  eduMap[v.ID],
+		}
+	}
+
+	return &offerModels, nil
 }
 
-func (s *OfferService) GetOfferById(id uuid.UUID) (*offer.OfferWithExpEduModel, error) {
+func (s *OfferService) GetOfferByIdWithExpEduSkill(id uuid.UUID) (*offer.OfferWithExpEduModel, error) {
 	o, err := s.offerRepo.GetOfferById(id)
 	if err != nil {
 		return nil, err
 	}
-	offerExp, err := s.offerRepo.GetOfferExperience(o.ID)
+	offerExp, err := s.offerRepo.GetOffersExperience(slices.Compact([]uuid.UUID{o.ID}))
 
 	if err != nil {
 		return nil, err
 	}
-	offerEdu, err := s.offerRepo.GetOfferEducation(o.ID)
+	offerEdu, err := s.offerRepo.GetOffersEducation(slices.Compact([]uuid.UUID{o.ID}))
 	if err != nil {
 		return nil, err
 	}

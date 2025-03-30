@@ -13,6 +13,7 @@ import (
 	userAdapter "github.com/f1k13/school-portal/internal/domain/adapter/user"
 	educationDataMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/education"
 	experienceMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/experience"
+	offerDataMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/offer"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
@@ -82,6 +83,7 @@ func StartApp() {
 	offerToEntityAdapter := offerAdapter.NewOfferToEntityAdapter()
 	educationToEntityAdapter := educationAdapter.NewEducationToEntityAdapter()
 	userToEntityAdapter := userAdapter.NewUserToEntityAdapter()
+	offerToEntityDataMapper := offerDataMapper.NewOfferToEntityDataMapper(offerToEntityAdapter)
 	educationToModelDataMapper := educationDataMapper.NewEducationDataMapper(educationToModelAdapter)
 	experienceToModelDataMapper := experienceMapper.NewExperienceToModelMapper(experienceToModelAdapter)
 
@@ -89,7 +91,7 @@ func StartApp() {
 	experienceToEntityDataMapper := experienceMapper.NewExperienceToEntityMapper(experienceToEntityAdapter)
 
 	userRepo := userRepo.NewUserRepository(DB, userToModelAdapter)
-	offerRepo := offerRepo.NewOfferRepository(DB, offerToModelAdapter)
+	offerRepo := offerRepo.NewOfferRepository(DB, offerToModelAdapter, experienceToModelDataMapper, educationToModelDataMapper)
 	educationRepo := educationRepo.NewEducationRepository(DB, educationToModelDataMapper)
 	experienceRepo := experienceRepo.NewExperienceRepository(DB, experienceToModelDataMapper)
 
@@ -103,7 +105,7 @@ func StartApp() {
 
 	authController := authController.NewAuthController(authService)
 	userController := userController.NewUserController(userService, userToEntityAdapter)
-	offerController := offerController.NewOfferController(offerService, offerToEntityAdapter, experienceToEntityDataMapper, educationToEntityDataMapper)
+	offerController := offerController.NewOfferController(offerService, offerToEntityAdapter, experienceToEntityDataMapper, educationToEntityDataMapper, offerToEntityDataMapper)
 	educationController := educationController.NewEducationController(educationService, educationToEntityDataMapper)
 	experienceController := experienceController.NewExperienceController(experienceService, experienceToEntityDataMapper)
 

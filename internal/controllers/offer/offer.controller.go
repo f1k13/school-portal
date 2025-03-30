@@ -8,6 +8,7 @@ import (
 	offerAdapter "github.com/f1k13/school-portal/internal/domain/adapter/offer"
 	educationDataMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/education"
 	experienceMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/experience"
+	offerDataMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/offer"
 	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
@@ -21,15 +22,17 @@ type OfferController struct {
 	adapter      *offerAdapter.OfferToEntityAdapter
 	expMapper    *experienceMapper.ExperienceToEntityMapper
 	eduMapper    *educationDataMapper.EducationToEntityDataMapper
+	offerMapper  *offerDataMapper.OfferToEntityDataMapper
 }
 
-func NewOfferController(offerService *offerService.OfferService, adapter *offerAdapter.OfferToEntityAdapter, expMapper *experienceMapper.ExperienceToEntityMapper, eduMapper *educationDataMapper.EducationToEntityDataMapper) *OfferController {
+func NewOfferController(offerService *offerService.OfferService, adapter *offerAdapter.OfferToEntityAdapter, expMapper *experienceMapper.ExperienceToEntityMapper, eduMapper *educationDataMapper.EducationToEntityDataMapper, offerMapper *offerDataMapper.OfferToEntityDataMapper) *OfferController {
 	return &OfferController{
 		offerService: offerService,
 		controllers:  &controllers.Controller{},
 		adapter:      adapter,
 		expMapper:    expMapper,
 		eduMapper:    eduMapper,
+		offerMapper:  offerMapper,
 	}
 }
 
@@ -72,7 +75,7 @@ func (c *OfferController) GetOfferById(w http.ResponseWriter, r *http.Request) {
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	o, err := c.offerService.GetOfferById(id)
+	o, err := c.offerService.GetOfferByIdWithExpEduSkill(id)
 	if err != nil {
 		logger.Log.Error("error in get offer by id handler", err)
 		res := controllers.Response{Message: err.Error()}
@@ -122,7 +125,26 @@ func (c *OfferController) SearchOffers(w http.ResponseWriter, r *http.Request) {
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	res := offer.OfferSearchWithExpEdSkillRes{Response: controllers.Response{Message: "Успешно"}, Offer: o}
-	c.controllers.ResponseJson(w, http.StatusOK, res)
+	offersWithExpEd := make([]offer.OfferWithExpEdSkill, len(*o))
+	for i, v := range *o {
+		offersWithExpEd[i] = offer.OfferWithExpEdSkill{
+			Offer: *c.adapter.OfferAdapter(&offer.OfferModel{
+				ID:          v.ID,
+				DirectionID: v.DirectionID,
+				Description: v.Description,
+				Title:       v.Title,
+				CreatedAt:   v.CreatedAt,
+				Price:       v.Price,
+				IsOnline:    v.IsOnline,
+			}),
+			Experiences: c.expMapper.ExperienceMapper(&v.Experience),
+			Educations:  *c.eduMapper.EducationMapper(&v.Education),
+		}
+	}
 
+	res := offer.OfferSearchWithExpEdSkillRes{
+		Response: controllers.Response{Message: "Успешно"},
+		Offer:    offersWithExpEd,
+	}
+	c.controllers.ResponseJson(w, http.StatusOK, res)
 }

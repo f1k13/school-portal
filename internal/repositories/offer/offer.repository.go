@@ -5,21 +5,26 @@ import (
 	"errors"
 
 	offerAdapter "github.com/f1k13/school-portal/internal/domain/adapter/offer"
+	educationDataMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/education"
+	experienceMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/experience"
 	"github.com/f1k13/school-portal/internal/domain/models/offer"
 	offerDto "github.com/f1k13/school-portal/internal/dto/offer"
 	"github.com/f1k13/school-portal/internal/logger"
 	"github.com/f1k13/school-portal/internal/storage/postgres/school-portal/public/table"
 	"github.com/go-jet/jet/v2/postgres"
+	jet "github.com/go-jet/jet/v2/postgres"
 	"github.com/google/uuid"
 )
 
 type OfferRepository struct {
-	db      *sql.DB
-	adapter *offerAdapter.OfferToModelAdapter
+	db        *sql.DB
+	adapter   *offerAdapter.OfferToModelAdapter
+	expMapper *experienceMapper.ExperienceToModelMapper
+	eduMapper *educationDataMapper.EducationDataMapper
 }
 
-func NewOfferRepository(db *sql.DB, adapter *offerAdapter.OfferToModelAdapter) *OfferRepository {
-	return &OfferRepository{db: db, adapter: adapter}
+func NewOfferRepository(db *sql.DB, adapter *offerAdapter.OfferToModelAdapter, expMapper *experienceMapper.ExperienceToModelMapper, eduMapper *educationDataMapper.EducationDataMapper) *OfferRepository {
+	return &OfferRepository{db: db, adapter: adapter, expMapper: expMapper, eduMapper: eduMapper}
 }
 
 func (r *OfferRepository) CreateOffer(dto offerDto.OfferDto) (*offer.OfferModel, error) {
@@ -108,33 +113,6 @@ func (r *OfferRepository) CreateOfferSkill(dto offerDto.OfferSkillDto) error {
 	return nil
 }
 
-func (r *OfferRepository) GetOfferExperience(offerID uuid.UUID) (*[]offer.OfferExperienceModel, error) {
-	stmt := table.OfferExperiences.SELECT(table.OfferExperiences.AllColumns).FROM(table.OfferExperiences).WHERE(table.OfferExperiences.OfferID.EQ(postgres.UUID(offerID)))
-
-	var dest []offer.OfferExperienceModel
-	err := stmt.Query(r.db, &dest)
-	if err != nil {
-		return nil, err
-	}
-	if len(dest) == 0 {
-		return nil, errors.New("error in get offer experience")
-	}
-	return &dest, nil
-}
-
-func (r *OfferRepository) GetOfferEducation(offerID uuid.UUID) (*[]offer.OfferEducationModel, error) {
-	stmt := table.OfferEducations.SELECT(table.OfferEducations.AllColumns).FROM(table.OfferEducations).WHERE(table.OfferEducations.OfferID.EQ(postgres.UUID(offerID)))
-
-	var dest []offer.OfferEducationModel
-
-	err := stmt.Query(r.db, &dest)
-
-	if err != nil {
-		return nil, err
-	}
-	return &dest, nil
-}
-
 func (r *OfferRepository) GetOfferSkill(offerID uuid.UUID) (*[]offer.OfferSkillModel, error) {
 	stmt := table.OfferSkills.SELECT(table.OfferSkills.AllColumns).FROM(table.OfferSkills).WHERE(table.OfferSkills.OfferID.EQ(postgres.UUID(offerID)))
 
@@ -148,6 +126,70 @@ func (r *OfferRepository) GetOfferSkill(offerID uuid.UUID) (*[]offer.OfferSkillM
 
 	if len(dest) == 0 {
 		return nil, errors.New("error in get offer skill")
+	}
+	return &dest, nil
+}
+
+func (r *OfferRepository) GetOffersWithFilters(dto *offerDto.SearchOfferDto) (*[]offer.OfferModel, error) {
+
+	conditions := []jet.BoolExpression{postgres.Bool(true)}
+
+	if dto.Query != "" {
+		conditions = append(conditions, table.Offers.Title.LIKE(postgres.String("%"+dto.Query+"%")).OR(table.Offers.Description.LIKE(postgres.String("%"+dto.Query+"%"))))
+	}
+
+	if dto.DirectionId != nil {
+		conditions = append(conditions, table.Offers.DirectionID.EQ(postgres.UUID(*dto.DirectionId)))
+	}
+
+	if dto.Price != nil {
+		conditions = append(conditions, table.Offers.Price.EQ(postgres.Int32(*dto.Price)))
+	}
+
+	if dto.IsOnline != nil {
+		conditions = append(conditions, table.Offers.IsOnline.EQ(postgres.Bool(*dto.IsOnline)))
+	}
+	if dto.Page < 1 {
+		dto.Page = 1
+	}
+	stmt := table.Offers.SELECT(table.Offers.AllColumns).FROM(table.Offers).WHERE(postgres.AND(conditions...)).LIMIT(int64(dto.Limit)).OFFSET(int64((dto.Page - 1) * dto.Limit))
+
+	var dest []offer.OfferModel
+
+	err := stmt.Query(r.db, &dest)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dest, nil
+}
+
+func (r *OfferRepository) GetOffersExperience(offerIDs []uuid.UUID) (*[]offer.OfferExperienceModel, error) {
+	ids := r.expMapper.GetExperienceIds(offerIDs)
+	stmt := table.OfferExperiences.
+		SELECT(table.OfferExperiences.AllColumns).
+		FROM(table.OfferExperiences).
+		WHERE(table.OfferExperiences.OfferID.IN(ids...))
+	var dest []offer.OfferExperienceModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	return &dest, nil
+}
+
+func (r *OfferRepository) GetOffersEducation(offerIDs []uuid.UUID) (*[]offer.OfferEducationModel, error) {
+	ids := r.eduMapper.EducationIds(offerIDs)
+	stmt := table.OfferEducations.
+		SELECT(table.OfferEducations.AllColumns).
+		FROM(table.OfferEducations).
+		WHERE(table.OfferEducations.OfferID.IN(ids...))
+
+	var dest []offer.OfferEducationModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return nil, err
 	}
 	return &dest, nil
 }

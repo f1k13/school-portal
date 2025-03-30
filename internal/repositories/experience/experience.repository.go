@@ -14,16 +14,16 @@ import (
 )
 
 type ExperienceRepository struct {
-	db     *sql.DB
-	mapper *experienceMapper.ExperienceToModelMapper
+	db        *sql.DB
+	expMapper *experienceMapper.ExperienceToModelMapper
 }
 
-func NewExperienceRepository(db *sql.DB, mapper *experienceMapper.ExperienceToModelMapper) *ExperienceRepository {
-	return &ExperienceRepository{db: db, mapper: mapper}
+func NewExperienceRepository(db *sql.DB, expMapper *experienceMapper.ExperienceToModelMapper) *ExperienceRepository {
+	return &ExperienceRepository{db: db, expMapper: expMapper}
 }
 
 func (r *ExperienceRepository) CreateExperience(dto *[]experienceDto.ExperienceDto) ([]experience.ExperienceModel, error) {
-	data := r.mapper.CreateExperienceMapperToModel(*dto)
+	data := r.expMapper.CreateExperienceMapperToModel(*dto)
 	var dest []experience.ExperienceModel
 
 	stmt := table.Experiences.INSERT(table.Experiences.AllColumns)
@@ -68,7 +68,7 @@ func (r *ExperienceRepository) GetExperiences() (*[]experience.ExperienceModel, 
 }
 func (r *ExperienceRepository) GetExperiencesByIds(expIDS []uuid.UUID) (*[]experience.ExperienceModel, error) {
 
-	ids := r.mapper.GetExperienceIds(expIDS)
+	ids := r.expMapper.GetExperienceIds(expIDS)
 	stmt := table.Experiences.SELECT(table.Experiences.AllColumns).FROM(table.Experiences).WHERE(table.Experiences.ID.IN(ids...))
 	var dest []experience.ExperienceModel
 	err := stmt.Query(r.db, &dest)
