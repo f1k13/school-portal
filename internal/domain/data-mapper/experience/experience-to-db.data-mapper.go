@@ -33,3 +33,11 @@ func (d *ExperienceToModelMapper) GetExperienceIds(ids []uuid.UUID) []jet.Expres
 	}
 	return expIDExprs
 }
+func (d *ExperienceToModelMapper) GetExperienceYears(years []int32) []jet.Expression {
+	var expYears []jet.Expression
+
+	for _, year := range years {
+		expYears = append(expYears, jet.Int32(year))
+	}
+	return expYears
+}

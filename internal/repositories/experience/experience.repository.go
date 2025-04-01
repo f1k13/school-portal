@@ -80,7 +80,20 @@ func (r *ExperienceRepository) GetExperiencesByIds(expIDS []uuid.UUID) (*[]exper
 	}
 	return &dest, nil
 }
-
+func (r *ExperienceRepository) GetExperiencesByIdsWithFilter(expIDS []uuid.UUID, filter *[]int32) (*[]experience.ExperienceModel, error) {
+	years := r.expMapper.GetExperienceYears(*filter)
+	ids := r.expMapper.GetExperienceIds(expIDS)
+	stmt := table.Experiences.SELECT(table.Experiences.AllColumns).FROM(table.Experiences).WHERE(table.Experiences.ID.IN(ids...).AND(table.Experiences.Years.IN(years...)))
+	var dest []experience.ExperienceModel
+	err := stmt.Query(r.db, &dest)
+	if err != nil {
+		return nil, err
+	}
+	if len(dest) == 0 {
+		return nil, errors.New("error in get exp")
+	}
+	return &dest, nil
+}
 func (r *ExperienceRepository) GetExperiencesByUserID(dto uuid.UUID) (*[]experience.ExperienceModel, error) {
 	stmt := table.Experiences.SELECT(table.Experiences.AllColumns).FROM(table.Experiences).WHERE(table.Experiences.UserID.EQ(postgres.UUID(dto)))
 

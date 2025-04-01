@@ -152,6 +152,9 @@ func (r *OfferRepository) GetOffersWithFilters(dto *offerDto.SearchOfferDto) (*[
 	if dto.Page < 1 {
 		dto.Page = 1
 	}
+	if dto.Limit < 1 {
+		dto.Limit = 10
+	}
 	stmt := table.Offers.SELECT(table.Offers.AllColumns).FROM(table.Offers).WHERE(postgres.AND(conditions...)).LIMIT(int64(dto.Limit)).OFFSET(int64((dto.Page - 1) * dto.Limit))
 
 	var dest []offer.OfferModel

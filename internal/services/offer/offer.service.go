@@ -104,7 +104,7 @@ func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) (*[]offer.Offe
 		logger.Log.Error("error in search offers", err)
 		return nil, err
 	}
-	if len(*o) == 0 {
+	if o == nil || len(*o) == 0 {
 		return &[]offer.OfferWithExpEduModel{}, nil
 	}
 
@@ -145,6 +145,7 @@ func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) (*[]offer.Offe
 
 	expMap := make(map[uuid.UUID][]experience.ExperienceModel)
 	eduMap := make(map[uuid.UUID][]education.EducationModel)
+	expSumMap := make(map[uuid.UUID]int32)
 
 	wg.Add(2)
 
@@ -169,6 +170,7 @@ func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) (*[]offer.Offe
 					if offerExp.ExperienceID == exp.ID {
 						mu.Lock()
 						expMap[offerExp.OfferID] = append(expMap[offerExp.OfferID], exp)
+						expSumMap[offerExp.OfferID] += exp.Years
 						mu.Unlock()
 					}
 				}
@@ -213,16 +215,25 @@ func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) (*[]offer.Offe
 		return nil, eduErr
 	}
 
-	offerModels := make([]offer.OfferWithExpEduModel, len(*o))
-	for i, v := range *o {
-		offerModels[i] = offer.OfferWithExpEduModel{
-			OfferModel: v,
-			Experience: expMap[v.ID],
-			Education:  eduMap[v.ID],
+	var filteredOffers []offer.OfferWithExpEduModel
+	var requiredExperience int32
+	if dto.ExperienceYears != nil && len(*dto.ExperienceYears) > 0 {
+		for _, exp := range *dto.ExperienceYears {
+			requiredExperience += exp
 		}
 	}
 
-	return &offerModels, nil
+	for _, v := range *o {
+		if requiredExperience == 0 || expSumMap[v.ID] >= requiredExperience {
+			filteredOffers = append(filteredOffers, offer.OfferWithExpEduModel{
+				OfferModel: v,
+				Experience: expMap[v.ID],
+				Education:  eduMap[v.ID],
+			})
+		}
+	}
+
+	return &filteredOffers, nil
 }
 
 func (s *OfferService) GetOfferByIdWithExpEduSkill(id uuid.UUID) (*offer.OfferWithExpEduModel, error) {

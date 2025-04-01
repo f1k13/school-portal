@@ -73,6 +73,8 @@ CREATE TABLE offer_skills (
     UNIQUE (offer_id, skill_id)
 );
 
+
+
 -- +goose Down
 DROP TABLE offer_experiences;
 DROP TABLE offer_educations;
