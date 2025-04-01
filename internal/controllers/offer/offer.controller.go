@@ -136,6 +136,7 @@ func (c *OfferController) SearchOffers(w http.ResponseWriter, r *http.Request) {
 				CreatedAt:   v.CreatedAt,
 				Price:       v.Price,
 				IsOnline:    v.IsOnline,
+				UserID:      v.UserID,
 			}),
 			Experiences: c.expMapper.ExperienceMapper(&v.Experience),
 			Educations:  *c.eduMapper.EducationMapper(&v.Education),

@@ -113,58 +113,106 @@ func (s *OfferService) SearchOffers(dto *offerDto.SearchOfferDto) (*[]offer.Offe
 		offerIds[i] = v.ID
 	}
 
-	offerExp, err := s.offerRepo.GetOffersExperience(offerIds)
-	if err != nil {
-		return nil, err
-	}
+	var (
+		offerExp *[]offer.OfferExperienceModel
+		offerEdu *[]offer.OfferEducationModel
+		expErr   error
+		eduErr   error
+		wg       sync.WaitGroup
+		mu       sync.Mutex
+	)
 
-	offerEdu, err := s.offerRepo.GetOffersEducation(offerIds)
-	if err != nil {
-		return nil, err
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		offerExp, expErr = s.offerRepo.GetOffersExperience(offerIds)
+	}()
+
+	go func() {
+		defer wg.Done()
+		offerEdu, eduErr = s.offerRepo.GetOffersEducation(offerIds)
+	}()
+
+	wg.Wait()
+
+	if expErr != nil {
+		return nil, expErr
+	}
+	if eduErr != nil {
+		return nil, eduErr
 	}
 
 	expMap := make(map[uuid.UUID][]experience.ExperienceModel)
 	eduMap := make(map[uuid.UUID][]education.EducationModel)
 
-	if len(*offerExp) > 0 {
-		expIDS := make([]uuid.UUID, len(*offerExp))
-		for i, v := range *offerExp {
-			expIDS[i] = v.ExperienceID
-		}
+	wg.Add(2)
 
-		experiences, err := s.expRepo.GetExperiencesByIds(expIDS)
-		if err != nil {
-			return nil, err
-		}
+	go func() {
+		defer wg.Done()
+		if len(*offerExp) > 0 {
+			expIDs := make([]uuid.UUID, len(*offerExp))
+			for i, v := range *offerExp {
+				expIDs[i] = v.ExperienceID
+			}
 
-		for _, exp := range *experiences {
-			for _, offerExp := range *offerExp {
-				if offerExp.ExperienceID == exp.ID {
-					expMap[offerExp.OfferID] = append(expMap[offerExp.OfferID], exp)
+			experiences, err := s.expRepo.GetExperiencesByIds(expIDs)
+			if err != nil {
+				mu.Lock()
+				expErr = err
+				mu.Unlock()
+				return
+			}
+
+			for _, exp := range *experiences {
+				for _, offerExp := range *offerExp {
+					if offerExp.ExperienceID == exp.ID {
+						mu.Lock()
+						expMap[offerExp.OfferID] = append(expMap[offerExp.OfferID], exp)
+						mu.Unlock()
+					}
 				}
 			}
 		}
-	}
+	}()
 
-	if len(*offerEdu) > 0 {
-		eduIds := make([]uuid.UUID, len(*offerEdu))
-		for i, v := range *offerEdu {
-			eduIds[i] = v.EducationID
-		}
+	go func() {
+		defer wg.Done()
+		if len(*offerEdu) > 0 {
+			eduIDs := make([]uuid.UUID, len(*offerEdu))
+			for i, v := range *offerEdu {
+				eduIDs[i] = v.EducationID
+			}
 
-		educations, err := s.eduRepo.GetEducationsByIds(eduIds)
-		if err != nil {
-			return nil, err
-		}
+			educations, err := s.eduRepo.GetEducationsByIds(eduIDs)
+			if err != nil {
+				mu.Lock()
+				eduErr = err
+				mu.Unlock()
+				return
+			}
 
-		for _, edu := range *educations {
-			for _, offerEdu := range *offerEdu {
-				if offerEdu.EducationID == edu.ID {
-					eduMap[offerEdu.OfferID] = append(eduMap[offerEdu.OfferID], edu)
+			for _, edu := range *educations {
+				for _, offerEdu := range *offerEdu {
+					if offerEdu.EducationID == edu.ID {
+						mu.Lock()
+						eduMap[offerEdu.OfferID] = append(eduMap[offerEdu.OfferID], edu)
+						mu.Unlock()
+					}
 				}
 			}
 		}
+	}()
+
+	wg.Wait()
+
+	if expErr != nil {
+		return nil, expErr
 	}
+	if eduErr != nil {
+		return nil, eduErr
+	}
+
 	offerModels := make([]offer.OfferWithExpEduModel, len(*o))
 	for i, v := range *o {
 		offerModels[i] = offer.OfferWithExpEduModel{
