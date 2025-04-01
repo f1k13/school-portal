@@ -6,6 +6,7 @@ import (
 
 	experienceMapper "github.com/f1k13/school-portal/internal/domain/data-mapper/experience"
 	"github.com/f1k13/school-portal/internal/domain/models/experience"
+	"github.com/google/uuid"
 
 	"github.com/f1k13/school-portal/internal/controllers"
 	experienceDto "github.com/f1k13/school-portal/internal/dto/experience"
@@ -43,4 +44,29 @@ func (c *ExperienceController) CreateExperience(w http.ResponseWriter, r *http.R
 	c.controllers.ResponseJson(w, http.StatusCreated, res)
 }
 
-func (c *ExperienceController) GetExperiences() {}
+func (c *ExperienceController) GetExperiences(w http.ResponseWriter, r *http.Request) {
+	userID := c.controllers.GetUserIDCtx(r.Context())
+
+	userIDParse, err := uuid.Parse(userID)
+
+	if err != nil {
+		res := controllers.Response{Message: err.Error()}
+		logger.Log.Error("error in parse id", err)
+		c.controllers.ResponseJson(w, http.StatusUnauthorized, res)
+		return
+	}
+
+	e, err := c.experienceService.GetMyExperience(userIDParse)
+
+	if err != nil {
+		res := controllers.Response{Message: err.Error()}
+		c.controllers.ResponseJson(w, http.StatusInternalServerError, res)
+		return
+	}
+
+	eMapper := c.mapper.ExperienceMapper(e)
+
+	res := experience.ExperienceRes{Experience: eMapper, Response: controllers.Response{Message: "Успешно"}}
+	c.controllers.ResponseJson(w, http.StatusOK, res)
+
+}

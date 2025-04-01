@@ -22,4 +22,5 @@ func NewExperienceRouter(r *chi.Mux, experienceController *experienceController.
 
 func (r *ExperienceRoute) ExperienceRouter() {
 	r.router.With(r.authMiddleware.Auth).Post("/experience/post", r.experienceController.CreateExperience)
+	r.router.With(r.authMiddleware.Auth).Get("/experience/get", r.experienceController.GetExperiences)
 }

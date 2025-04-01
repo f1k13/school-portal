@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	controllers "github.com/f1k13/school-portal/internal/controllers"
+	userAdapter "github.com/f1k13/school-portal/internal/domain/adapter/user"
 	"github.com/f1k13/school-portal/internal/domain/models/auth"
 	"github.com/f1k13/school-portal/internal/domain/models/user"
 	userDto "github.com/f1k13/school-portal/internal/dto/user"
@@ -15,12 +16,14 @@ import (
 type AuthController struct {
 	AuthService *authService.AuthService
 	controllers *controllers.Controller
+	adapter     *userAdapter.UserToEntityAdapter
 }
 
-func NewAuthController(authService *authService.AuthService) *AuthController {
+func NewAuthController(authService *authService.AuthService, adapter *userAdapter.UserToEntityAdapter) *AuthController {
 	return &AuthController{
 		AuthService: authService,
 		controllers: &controllers.Controller{},
+		adapter:     adapter,
 	}
 }
 
@@ -40,9 +43,10 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		logger.Log.Error("error sign up method")
 		return
 	}
+	userAdapter := c.adapter.UserAdapter(&u.User)
 	res := user.UserResponseAuth{
 		Response: controllers.Response{Message: "Успешная регистрация"},
-		User:     u.User,
+		User:     *userAdapter,
 		Token:    u.Token,
 	}
 	c.controllers.ResponseJson(w, http.StatusCreated, res)
@@ -102,8 +106,9 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		c.controllers.ResponseJson(w, http.StatusBadRequest, res)
 		return
 	}
-	res := user.UserWithToken{
-		User:  u.User,
+	userAdapter := c.adapter.UserAdapter(&u.User)
+	res := user.UserWithTokenEntity{
+		User:  *userAdapter,
 		Token: u.Token,
 	}
 	c.controllers.ResponseJson(w, http.StatusOK, res)

@@ -10,6 +10,7 @@ import (
 	educationDto "github.com/f1k13/school-portal/internal/dto/education"
 	"github.com/f1k13/school-portal/internal/logger"
 	educationService "github.com/f1k13/school-portal/internal/services/education"
+	"github.com/google/uuid"
 )
 
 type EducationController struct {
@@ -46,4 +47,28 @@ func (c *EducationController) CreateEducation(w http.ResponseWriter, r *http.Req
 	eMapper := c.mapper.EducationMapper(&e)
 	res := education.EducationRes{Education: *eMapper, Response: controllers.Response{Message: "Успешно"}}
 	c.controllers.ResponseJson(w, http.StatusCreated, res)
+}
+
+func (c *EducationController) GetEducations(w http.ResponseWriter, r *http.Request) {
+	userID := c.controllers.GetUserIDCtx(r.Context())
+	userIDParse, err := uuid.Parse(userID)
+
+	if err != nil {
+		logger.Log.Error("error user id parse")
+		res := controllers.Response{Message: err.Error()}
+		c.controllers.ResponseJson(w, http.StatusUnauthorized, res)
+		return
+	}
+	e, err := c.educationService.GetMyEducations(userIDParse)
+
+	if err != nil {
+		logger.Log.Error("error in get educations", err)
+		res := controllers.Response{Message: err.Error()}
+
+		c.controllers.ResponseJson(w, http.StatusInternalServerError, res)
+	}
+	educationMapper := c.mapper.EducationMapper(e)
+
+	res := education.EducationRes{Education: *educationMapper, Response: controllers.Response{Message: "Успешно"}}
+	c.controllers.ResponseJson(w, http.StatusOK, res)
 }

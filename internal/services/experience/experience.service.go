@@ -36,3 +36,7 @@ func (s *ExperienceService) CreateExperience(dto *[]experienceDto.ExperienceDto,
 	}
 	return &e, nil
 }
+
+func (s *ExperienceService) GetMyExperience(dto uuid.UUID) (*[]experience.ExperienceModel, error) {
+	return s.experienceRepo.GetExperiencesByUserID(dto)
+}

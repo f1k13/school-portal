@@ -37,8 +37,8 @@ type Profile struct {
 
 type UserResponseAuth struct {
 	handlers.Response
-	User  UserModel `json:"user"`
-	Token string    `json:"token"`
+	User  User   `json:"user"`
+	Token string `json:"token"`
 }
 type UserSelfRes struct {
 	controllers.Response
@@ -55,4 +55,8 @@ type UserProfileRes struct {
 type UserProfileModel struct {
 	User    UserModel
 	Profile ProfileModel
+}
+type UserWithTokenEntity struct {
+	User
+	Token string `json:"string"`
 }

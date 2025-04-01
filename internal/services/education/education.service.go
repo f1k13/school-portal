@@ -41,3 +41,7 @@ func (s *EducationService) CreateEducation(dto *[]educationDto.EducationDto, use
 	}
 	return e, nil
 }
+
+func (s *EducationService) GetMyEducations(dto uuid.UUID) (*[]education.EducationModel, error) {
+	return s.educationRepo.GetEducationsByUserID(dto)
+}

@@ -8,18 +8,19 @@ import (
 
 type EducationRoute struct {
 	educationController *educationController.EducationController
-	r                   *chi.Mux
+	router              *chi.Mux
 	authMiddleware      *auth.AuthMiddleWare
 }
 
 func NewEducationRouter(r *chi.Mux, educationController *educationController.EducationController, authMiddleware *auth.AuthMiddleWare) *EducationRoute {
 	return &EducationRoute{
 		educationController: educationController,
-		r:                   r,
+		router:              r,
 		authMiddleware:      authMiddleware,
 	}
 }
 
 func (r *EducationRoute) EducationRouter() {
-	r.r.With(r.authMiddleware.Auth).Post("/education/post", r.educationController.CreateEducation)
+	r.router.With(r.authMiddleware.Auth).Post("/education/post", r.educationController.CreateEducation)
+	r.router.With(r.authMiddleware.Auth).Get("/education/get", r.educationController.GetEducations)
 }

@@ -79,3 +79,16 @@ func (r *EducationRepository) GetEducationsByIds(eduIDS []uuid.UUID) (*[]educati
 	}
 	return &dest, nil
 }
+
+func (r *EducationRepository) GetEducationsByUserID(dto uuid.UUID) (*[]education.EducationModel, error) {
+	stmt := table.Educations.SELECT(table.Educations.AllColumns).FROM(table.Educations).WHERE(table.Educations.UserID.EQ(postgres.UUID(dto)))
+
+	var dest []education.EducationModel
+
+	err := stmt.Query(r.db, &dest)
+
+	if err != nil {
+		return nil, err
+	}
+	return &dest, nil
+}
